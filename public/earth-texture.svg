@@ -1,0 +1,39 @@
+<svg width="2048" height="1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="oceanGradient" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" style="stop-color:#2E86AB;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#1a5f7a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0F2027;stop-opacity:1" />
+    </radialGradient>
+    
+    <pattern id="landmass" patternUnits="userSpaceOnUse" width="400" height="200">
+      <ellipse cx="100" cy="80" rx="30" ry="60" fill="#4A7C2A" opacity="0.8"/>
+      <ellipse cx="120" cy="120" rx="25" ry="45" fill="#3A6A1A" opacity="0.7"/>
+      <ellipse cx="200" cy="60" rx="15" ry="30" fill="#4A7C2A" opacity="0.8"/>
+      <ellipse cx="210" cy="120" rx="20" ry="50" fill="#5A8C3A" opacity="0.7"/>
+      <ellipse cx="280" cy="70" rx="40" ry="35" fill="#4A7C2A" opacity="0.8"/>
+      <ellipse cx="320" cy="90" rx="25" ry="25" fill="#3A6A1A" opacity="0.7"/>
+      <ellipse cx="350" cy="140" rx="15" ry="10" fill="#4A7C2A" opacity="0.8"/>
+    </pattern>
+    
+    <pattern id="clouds" patternUnits="userSpaceOnUse" width="300" height="150">
+      <circle cx="50" cy="40" r="20" fill="#ffffff" opacity="0.3"/>
+      <circle cx="150" cy="80" r="25" fill="#ffffff" opacity="0.2"/>
+      <circle cx="250" cy="50" r="18" fill="#ffffff" opacity="0.25"/>
+    </pattern>
+    
+    <radialGradient id="atmosphere" cx="50%" cy="50%" r="50%">
+      <stop offset="70%" style="stop-color:transparent;stop-opacity:0" />
+      <stop offset="85%" style="stop-color:#87CEEB;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#B0E0E6;stop-opacity:0.6" />
+    </radialGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#oceanGradient)"/>
+  <rect width="100%" height="100%" fill="url(#landmass)"/>
+  <rect width="100%" height="100%" fill="url(#clouds)"/>
+  <rect width="100%" height="100%" fill="url(#atmosphere)"/>
+  
+  <circle cx="512" cy="256" r="200" fill="none" stroke="#87CEEB" stroke-width="2" opacity="0.2"/>
+  <circle cx="512" cy="256" r="250" fill="none" stroke="#98D8C8" stroke-width="1" opacity="0.15"/>
+</svg>
