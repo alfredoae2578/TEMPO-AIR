@@ -438,7 +438,7 @@ export const AirQualityApp = () => {
         </div>
       </aside>
 
-      {/* Superposici�n de barra lateral m�vil */}
+      {/* Superposicion de barra lateral movil */}
       <AnimatePresence>
         {sidebarOpen && <motion.div initial={{
         opacity: 0
@@ -523,7 +523,7 @@ export const AirQualityApp = () => {
 
       {/* Contenido principal */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Encabezado m�vil/escritorio */}
+        {/* Encabezado movil/escritorio */}
         <header className="bg-gradient-to-r from-[#2d5a7b]/60 to-[#4A90A4]/60 backdrop-blur-sm shadow-lg p-4 flex items-center justify-between sticky top-0 z-30 border-b-2 border-[#87CEEB]/30">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 hover:bg-[#87CEEB]/10 rounded-full transition-colors">
@@ -650,7 +650,7 @@ export const AirQualityApp = () => {
                   <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 mt-6 border border-[#87CEEB]/30">
                     <p className="text-sm text-[#B0E0E6] leading-relaxed">
                       <span>
-                        La calidad del aire es aceptable para la mayor�a de las personas. Los grupos sensibles deben considerar reducir la actividad prolongada al aire libre.
+                        La calidad del aire es aceptable para la mayoria de las personas. Los grupos sensibles deben considerar reducir la actividad prolongada al aire libre.
                       </span>
                     </p>
                   </div>
@@ -699,7 +699,7 @@ export const AirQualityApp = () => {
                   boxShadow: '0 4px 8px rgba(135, 206, 235, 0.15), inset 0 -2px 4px rgba(0, 0, 0, 0.1)'
                 }}>
                       <Sun className="w-6 h-6 text-[#F8B739] mx-auto mb-2" />
-                      <p className="text-2xl font-bold text-white">{weather.temp}�</p>
+                      <p className="text-2xl font-bold text-white">{weather.temp}°</p>
                       <p className="text-xs text-[#B0E0E6] mt-1">
                         <span>Temperatura</span>
                       </p>
@@ -1054,10 +1054,10 @@ export const AirQualityApp = () => {
                       <Info className="w-5 h-5 text-[#E67E22] mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="font-bold text-sm text-white">
-                          <span>Ni�os y Adultos Mayores</span>
+                          <span>Niños y Adultos Mayores</span>
                         </p>
                         <p className="text-xs text-[#B0E0E6]">
-                          <span>Tome descansos durante las actividades al aire libre si experimenta s�ntomas.</span>
+                          <span>Tome descansos durante las actividades al aire libre si experimenta sintomas.</span>
                         </p>
                       </div>
                     </div>
@@ -1152,7 +1152,7 @@ export const AirQualityApp = () => {
             </motion.div>}
         </div>
 
-        {/* Navegaci�n inferior m�vil */}
+        {/* Navegacion inferior movil */}
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#2d5a7b]/70 to-[#4A90A4]/70 backdrop-blur-sm border-t-2 border-[#87CEEB]/30 shadow-2xl z-30">
           <div className="grid grid-cols-4 gap-1 p-2">
             <button onClick={() => setActiveTab('overview')} className={`flex flex-col items-center gap-1 py-2.5 px-3 rounded-lg transition-all ${activeTab === 'overview' ? 'bg-gradient-to-r from-[#87CEEB] to-[#5DADE2] text-white' : 'text-[#B0E0E6] hover:bg-[#87CEEB]/10'}`} style={activeTab === 'overview' ? {
