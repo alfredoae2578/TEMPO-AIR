@@ -371,9 +371,9 @@ export const AirQualityApp = () => {
     {/* Fondo de la Tierra 3D */}
     <EarthBackground />
     
-    {/* Overlay semi-transparente para mejorar la legibilidad */}
-    <div className="absolute inset-0 bg-gradient-to-br from-[#1a3a52]/40 via-[#2d5a7b]/30 to-[#1a3a52]/40 z-10" />
-    
+    {/* Overlay semi-transparente para mejorar la legibilidad (15% más opacidad) */}
+    <div className="absolute inset-0 bg-gradient-to-br from-[#1a3a52]/55 via-[#2d5a7b]/45 to-[#1a3a52]/55 z-10" />
+
     {/* Contenido principal con z-index mayor */}
     <div className="relative z-20 h-full w-full flex">
       {/* Barra lateral de escritorio */}
@@ -381,7 +381,7 @@ export const AirQualityApp = () => {
         <div className="p-6 border-b border-[#87CEEB]/20">
           <div className="flex items-center gap-3 mb-6">
             <div className="relative">
-              <Satellite className="w-10 h-10 text-[#87CEEB]" />
+              <img src="/logo.png" alt="App Logo" className="w-10 h-10 object-contain" />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />
             </div>
             <div>
@@ -463,7 +463,7 @@ export const AirQualityApp = () => {
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <Satellite className="w-8 h-8 text-[#87CEEB]" />
+                      <img src="/logo.png" alt="App Logo" className="w-8 h-8 object-contain" />
                       <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />
                     </div>
                     <div>
@@ -517,7 +517,7 @@ export const AirQualityApp = () => {
             } : {}}>
                   <Bell className="w-5 h-5" />
                   <span>Alertas</span>
-                  {alerts.length > 0 && <span className="ml-auto bg-[#98D8C8] text-[#1a3a52] text-xs px-2 py-1 rounded-full font-bold">
+                  {alerts.length > 0 && <span className="ml-auto bg-[#98D8C8] text-[#1a3a52] text-xs px-2 py-1 rounded-full font-bold shadow-md">
                       {alerts.length}
                     </span>}
                 </button>
@@ -536,7 +536,7 @@ export const AirQualityApp = () => {
             </button>
             <div className="lg:hidden flex items-center gap-2">
               <div className="relative">
-                <Satellite className="w-6 h-6 text-[#87CEEB]" />
+                <img src="/logo.png" alt="App Logo" className="w-6 h-6 object-contain" />
                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />
               </div>
               <div>
