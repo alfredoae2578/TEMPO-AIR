@@ -11,4 +11,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    port: 5173,
+    host: true, // Permite conexiones externas
+    strictPort: true, // Falla si el puerto no está disponible en lugar de cambiar automáticamente
+    open: true, // Abre automáticamente el navegador
+  },
 });
