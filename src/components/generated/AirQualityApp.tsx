@@ -91,7 +91,7 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'moderate'
 }, {
   id: '2',
-  name: 'Los �ngeles',
+  name: 'Los Ángeles',
   lat: 34.0522,
   lng: -118.2437,
   aqi: 125,
@@ -105,7 +105,7 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'moderate'
 }, {
   id: '4',
-  name: 'Par�s',
+  name: 'París',
   lat: 48.8566,
   lng: 2.3522,
   aqi: 55,
@@ -140,21 +140,21 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'unhealthy-sensitive'
 }, {
   id: '9',
-  name: 'S�dney',
+  name: 'Sídney',
   lat: -33.8688,
   lng: 151.2093,
   aqi: 35,
   level: 'good'
 }, {
   id: '10',
-  name: 'S�o Paulo',
+  name: 'São Paulo',
   lat: -23.5505,
   lng: -46.6333,
   aqi: 72,
   level: 'moderate'
 }, {
   id: '11',
-  name: 'Ciudad de M�xico',
+  name: 'Ciudad de México',
   lat: 19.4326,
   lng: -99.1332,
   aqi: 98,
@@ -168,7 +168,7 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'unhealthy'
 }, {
   id: '13',
-  name: 'Mosc�',
+  name: 'Moscú',
   lat: 55.7558,
   lng: 37.6173,
   aqi: 68,
@@ -182,7 +182,7 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'moderate'
 }, {
   id: '15',
-  name: 'Dub�i',
+  name: 'Dubái',
   lat: 25.2048,
   lng: 55.2708,
   aqi: 88,
@@ -196,7 +196,7 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'good'
 }, {
   id: '17',
-  name: 'Berl�n',
+  name: 'Berlín',
   lat: 52.5200,
   lng: 13.4050,
   aqi: 48,
@@ -210,7 +210,7 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'moderate'
 }, {
   id: '19',
-  name: 'Se�l',
+  name: 'Seúl',
   lat: 37.5665,
   lng: 126.9780,
   aqi: 78,
@@ -238,7 +238,7 @@ export const AirQualityApp = () => {
   const pollutants: PollutantData[] = [{
     name: 'PM2.5',
     value: 35.2,
-    unit: '�g/m�',
+    unit: 'μg/m³',
     level: 'moderate',
     trend: 'down'
   }, {
@@ -256,7 +256,7 @@ export const AirQualityApp = () => {
   }, {
     name: 'PM10',
     value: 58.1,
-    unit: '�g/m�',
+    unit: 'μg/m³',
     level: 'moderate',
     trend: 'down'
   }];
@@ -323,7 +323,7 @@ export const AirQualityApp = () => {
     date: 'Mar',
     aqi: 78
   }, {
-    date: 'Mi�',
+    date: 'Mié',
     aqi: 82
   }, {
     date: 'Jue',
@@ -332,7 +332,7 @@ export const AirQualityApp = () => {
     date: 'Vie',
     aqi: 88
   }, {
-    date: 'S�b',
+    date: 'Sáb',
     aqi: 85
   }, {
     date: 'Dom',
@@ -346,7 +346,7 @@ export const AirQualityApp = () => {
   }, {
     id: '2',
     severity: 'info',
-    message: 'Los datos del sat�lite TEMPO se han actualizado con las �ltimas mediciones',
+    message: 'Los datos del satélite TEMPO se han actualizado con las últimas mediciones',
     timestamp: 'Hace 4 horas'
   }];
   const aqiLevel = calculateAQILevel(currentAQI);
@@ -356,10 +356,10 @@ export const AirQualityApp = () => {
         setCurrentLocation({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-          name: 'Ubicaci�n actual'
+          name: 'Ubicación actual'
         });
       }, error => {
-        console.log('Acceso a ubicaci�n denegado:', error);
+        console.log('Acceso a ubicación denegado:', error);
       });
     }
   }, []);
@@ -378,19 +378,14 @@ export const AirQualityApp = () => {
     <div className="relative z-20 h-full w-full flex">
       {/* Barra lateral de escritorio */}
       <aside className="hidden lg:flex lg:flex-col lg:w-72 bg-gradient-to-b from-[#2d5a7b]/60 to-[#1a3a52]/60 backdrop-blur-sm border-r-2 border-[#87CEEB]/30 shadow-2xl">
-        <div className="p-6 border-b border-[#87CEEB]/20">
-          <div className="flex items-center gap-3 mb-6">
+        <div className="p-3 border-b border-[#87CEEB]/20">
+          <div className="flex items-center justify-center">
+            {/* Centered extra large logo with white shadow effect */}
             <div className="relative">
-              <img src="/logo.png" alt="App Logo" className="w-10 h-10 object-contain" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white tracking-wide">
-                <span>NASA TEMPO</span>
-              </h1>
-              <p className="text-xs text-[#B0E0E6]">
-                <span>Monitor de Calidad del Aire</span>
-              </p>
+              <img src="/logo.png" alt="App Logo" className="w-64 h-64 object-contain" style={{
+                filter: 'drop-shadow(0 4px 8px rgba(255, 255, 255, 0.3)) drop-shadow(0 2px 4px rgba(255, 255, 255, 0.5))'
+              }} />
+              <div className="absolute -top-1 -right-1 w-7 h-7 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />
             </div>
           </div>
         </div>
@@ -406,7 +401,7 @@ export const AirQualityApp = () => {
           boxShadow: '0 8px 16px rgba(135, 206, 235, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.2)'
         } : {}}>
             <TrendingUp className="w-5 h-5" />
-            <span>Pron�stico</span>
+            <span>Pronóstico</span>
           </button>
           <button onClick={() => setActiveTab('map')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-semibold ${activeTab === 'map' ? 'bg-gradient-to-r from-[#87CEEB] to-[#5DADE2] text-white shadow-lg shadow-[#87CEEB]/40' : 'text-[#B0E0E6] hover:bg-[#87CEEB]/10'}`} style={activeTab === 'map' ? {
           boxShadow: '0 8px 16px rgba(135, 206, 235, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.2)'
@@ -430,14 +425,14 @@ export const AirQualityApp = () => {
             <div className="flex items-center gap-2 mb-2">
               <MapPin className="w-4 h-4 text-[#98D8C8]" />
               <span className="text-xs font-bold text-white">
-                <span>Ubicaci�n Actual</span>
+                <span>Ubicación Actual</span>
               </span>
             </div>
             <p className="text-sm text-white font-semibold">
               <span>{currentLocation.name}</span>
             </p>
             <p className="text-xs text-[#B0E0E6] mt-1">
-              <span>{currentLocation.lat.toFixed(4)}�, {currentLocation.lng.toFixed(4)}�</span>
+              <span>{currentLocation.lat.toFixed(4)}°, {currentLocation.lng.toFixed(4)}°</span>
             </p>
           </div>
         </div>
@@ -498,7 +493,7 @@ export const AirQualityApp = () => {
               boxShadow: '0 8px 16px rgba(135, 206, 235, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.2)'
             } : {}}>
                   <TrendingUp className="w-5 h-5" />
-                  <span>Pron�stico</span>
+                  <span>Pronóstico</span>
                 </button>
                 <button onClick={() => {
               setActiveTab('map');
@@ -547,7 +542,7 @@ export const AirQualityApp = () => {
             </div>
             <div className="hidden lg:block">
               <h2 className="text-xl font-bold text-white capitalize">
-                <span>{activeTab === 'overview' ? 'Resumen' : activeTab === 'forecast' ? 'Pron�stico' : activeTab === 'map' ? 'Mapa Global' : 'Alertas'}</span>
+                <span>{activeTab === 'overview' ? 'Resumen' : activeTab === 'forecast' ? 'Pronóstico' : activeTab === 'map' ? 'Mapa Global' : 'Alertas'}</span>
               </h2>
               <p className="text-xs text-[#B0E0E6]">
                 <span>Monitoreo de calidad del aire en tiempo real</span>
@@ -611,7 +606,8 @@ export const AirQualityApp = () => {
                           <span>{currentLocation.name}</span>
                         </span>
                         <p className="text-xs text-[#B0E0E6]">
-                          <span>{currentLocation.lat.toFixed(4)}�, {currentLocation.lng.toFixed(4)}�</span>
+                          <span>{currentLocation.lat.toFixed(4)}°,
+                          {currentLocation.lng.toFixed(4)}°</span>
                         </p>
                       </div>
                     </div>
@@ -637,7 +633,7 @@ export const AirQualityApp = () => {
 
                       <div className="text-left">
                         <h2 className="text-xl lg:text-2xl font-bold text-white mb-2 tracking-wide">
-                          <span>�ndice de Calidad del Aire</span>
+                          <span>Indice de Calidad del Aire</span>
                         </h2>
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#87CEEB]/20 backdrop-blur border border-[#87CEEB]/40" style={{
                       boxShadow: '0 4px 12px rgba(135, 206, 235, 0.2), inset 0 -2px 6px rgba(0, 0, 0, 0.15)'
@@ -696,7 +692,7 @@ export const AirQualityApp = () => {
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
                   <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                     <Cloud className="w-5 h-5 text-[#98D8C8]" />
-                    <span>Condiciones Clim�ticas</span>
+                    <span>Condiciones Climaticas</span>
                   </h3>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-3 bg-[#87CEEB]/10 backdrop-blur rounded-xl border border-[#87CEEB]/30" style={{
@@ -732,7 +728,7 @@ export const AirQualityApp = () => {
                 {/* Tendencia de 7 d�as */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
                   <h3 className="text-lg font-bold text-white mb-4">
-                    <span>Tendencia de 7 D�as</span>
+                    <span>Tendencia de 7 Dias</span>
                   </h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <AreaChart data={historicalData}>
@@ -775,7 +771,7 @@ export const AirQualityApp = () => {
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-white">
-                      <span>Pron�stico de 24 Horas</span>
+                      <span>Pronóstico de 24 Horas</span>
                     </h3>
                     <Calendar className="w-5 h-5 text-[#98D8C8]" />
                   </div>
@@ -811,7 +807,7 @@ export const AirQualityApp = () => {
                 {/* Pron�stico de contaminantes */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
                   <h3 className="text-lg font-bold text-white mb-4">
-                    <span>Pron�stico de Contaminantes</span>
+                    <span>Pronóstico de Contaminantes</span>
                   </h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={forecastData}>
@@ -890,7 +886,8 @@ export const AirQualityApp = () => {
                             <span>{location.name}</span>
                           </p>
                           <p className="text-xs text-[#B0E0E6]">
-                            <span>{location.lat.toFixed(2)}�, {location.lng.toFixed(2)}�</span>
+                            <span>{location.lat.toFixed(2)}°,
+                            {location.lng.toFixed(2)}°</span>
                           </p>
                         </div>
                         <div className="flex items-center gap-3">
@@ -951,10 +948,10 @@ export const AirQualityApp = () => {
                         <Cloud className="w-5 h-5 text-[#5DADE2] mt-0.5 flex-shrink-0" />
                         <div>
                           <p className="font-bold text-xs text-white">
-                            <span>Datos Meteorol�gicos</span>
+                            <span>Datos Meteorologicos</span>
                           </p>
                           <p className="text-xs text-[#B0E0E6] mt-1">
-                            <span>Informaci�n meteorol�gica</span>
+                            <span>Informacion meteorologica</span>
                           </p>
                         </div>
                       </div>
@@ -1031,7 +1028,7 @@ export const AirQualityApp = () => {
                       <CheckCircle className="w-5 h-5 text-[#98D8C8] mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="font-bold text-sm text-white">
-                          <span>Poblaci�n General</span>
+                          <span>Poblacion General</span>
                         </p>
                         <p className="text-xs text-[#B0E0E6]">
                           <span>Las actividades al aire libre son aceptables. Disfrute de su rutina habitual.</span>
@@ -1098,7 +1095,7 @@ export const AirQualityApp = () => {
                 {/* Configuraci�n de notificaciones */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
                   <h3 className="text-lg font-bold text-white mb-4">
-                    <span>Configuraci�n de Notificaciones</span>
+                    <span>Configuracion de Notificaciones</span>
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="flex items-center justify-between p-4 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#87CEEB]/30" style={{
@@ -1138,10 +1135,10 @@ export const AirQualityApp = () => {
                 }}>
                       <div className="flex-1 mr-4">
                         <p className="text-sm font-bold text-white">
-                          <span>Actualizaciones de Pron�stico</span>
+                          <span>Actualizaciones de Pronostico</span>
                         </p>
                         <p className="text-xs text-[#B0E0E6] mt-1">
-                          <span>Notificaciones de pron�stico</span>
+                          <span>Notificaciones de pronostico</span>
                         </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
@@ -1171,7 +1168,7 @@ export const AirQualityApp = () => {
           } : {}}>
               <TrendingUp className="w-5 h-5" />
               <span className="text-xs font-bold">
-                <span>Pron�stico</span>
+                <span>Pronóstico</span>
               </span>
             </button>
             <button onClick={() => setActiveTab('map')} className={`flex flex-col items-center gap-1 py-2.5 px-3 rounded-lg transition-all ${activeTab === 'map' ? 'bg-gradient-to-r from-[#87CEEB] to-[#5DADE2] text-white' : 'text-[#B0E0E6] hover:bg-[#87CEEB]/10'}`} style={activeTab === 'map' ? {
