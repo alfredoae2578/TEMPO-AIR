@@ -54,7 +54,6 @@ const TempoMapInline: React.FC = () => {
   const [temporaryCoords, setTemporaryCoords] = useState<Coordinates | null>(null);
   const [results, setResults] = useState<TempoResult[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>('');
-  const [radius, setRadius] = useState(10);
   const [heatLayers, setHeatLayers] = useState<any[]>([]);
   const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
