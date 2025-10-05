@@ -42,7 +42,13 @@ interface MapClickEvent {
   };
 }
 
-const TempoMapInline: React.FC = () => {
+interface TempoMapInlineProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+  onLocationChange?: (location: { lat: number; lng: number; name: string }) => void;
+}
+
+const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -160,6 +166,11 @@ const TempoMapInline: React.FC = () => {
       map.setView([lat, lon], 13);
     }
     
+    // Notificar al componente padre del cambio de ubicación
+    if (onLocationChange) {
+      onLocationChange({ lat, lng: lon, name });
+    }
+    
     await consultTEMPO(lat, lon, name);
   };
 
@@ -196,6 +207,12 @@ const TempoMapInline: React.FC = () => {
       }
       
       setSelectedLocation(name);
+      
+      // Notificar al componente padre del cambio de ubicación
+      if (onLocationChange) {
+        onLocationChange({ lat, lng: lon, name });
+      }
+      
       await consultTEMPO(lat, lon, name);
     } catch (error) {
       let message = 'Error al obtener ubicación';
@@ -235,6 +252,16 @@ const TempoMapInline: React.FC = () => {
     }
 
     setSelectedLocation(name);
+    
+    // Notificar al componente padre del cambio de ubicación
+    if (onLocationChange) {
+      onLocationChange({
+        lat: temporaryCoords.lat,
+        lng: temporaryCoords.lon,
+        name: name
+      });
+    }
+    
     await consultTEMPO(temporaryCoords.lat, temporaryCoords.lon, name);
   };
 
