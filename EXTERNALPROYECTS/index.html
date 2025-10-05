@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Índice de Calidad del Aire - TEMPO NASA</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+
+        .layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        .panel {
+            width: 370px;
+            background: white;
+            padding: 25px;
+            overflow-y: auto;
+            box-shadow: 3px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        #mapa {
+            flex: 1;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 25px;
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .opciones {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        button.activo {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.4);
+        }
+
+        .busqueda {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .sugerencias {
+            position: absolute;
+            width: 100%;
+            border: 2px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            background: white;
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .sugerencia {
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .sugerencia:hover {
+            background: #f8f8f8;
+        }
+
+        .parametros {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #444;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .leyenda {
+            background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+            margin-top: 25px;
+            border: 1px solid #e8e8e8;
+        }
+
+        .leyenda h3 {
+            margin-bottom: 15px;
+            font-size: 15px;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .leyenda-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 10px 0;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .color-box {
+            width: 35px;
+            height: 22px;
+            border-radius: 5px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .resultado {
+            margin-top: 25px;
+            padding: 20px;
+            background: white;
+            border-left: 5px solid #4CAF50;
+            border-radius: 8px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .dato {
+            margin: 12px 0;
+        }
+
+        .etiqueta {
+            font-weight: 600;
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .valor {
+            display: block;
+            color: #1a1a1a;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .zona-calor {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+            font-size: 13px;
+            transition: transform 0.2s;
+        }
+
+        .zona-calor:hover {
+            transform: translateX(5px);
+        }
+
+        .indice-score {
+            font-size: 20px;
+            font-weight: 700;
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            color: white;
+            margin: 5px 0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .error {
+            color: #d32f2f;
+            padding: 15px;
+            background: #ffebee;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #d32f2f;
+        }
+
+        .cargando {
+            color: #1976D2;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #1976D2;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid #e0e0e0;
+            margin: 20px 0;
+        }
+
+        .btn-confirmar {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+        <div class="panel">
+            <h1>🌍 Calidad del Aire</h1>
+
+            <div class="opciones">
+                <button onclick="usarUbicacionActual()">📍 Mi Ubicación</button>
+                <button onclick="usarClickMapa()">🗺️ Clic en Mapa</button>
+            </div>
+
+            <div class="busqueda">
+                <label for="inputBusqueda">Buscar ubicación:</label>
+                <input type="text" id="inputBusqueda" placeholder="Ciudad, país, lugar..."
+                    oninput="buscarUbicaciones()">
+                <div id="sugerencias" class="sugerencias"></div>
+            </div>
+
+            <div class="parametros">
+                <div>
+                    <label for="numCoord">🎯 Zonas a analizar:</label>
+                    <input type="number" id="numCoord" value="5" min="3" max="10">
+                </div>
+                <div>
+                    <label for="radio">📏 Radio de análisis (km):</label>
+                    <input type="number" id="radio" value="10" min="5" max="50">
+                </div>
+            </div>
+
+            <div class="leyenda">
+                <h3>📊 Índice AQI Satelital (0-500)</h3>
+                <div class="leyenda-item">
+                    <div class="color-box" style="background:#00E400"></div>
+                    <span><b>0-50:</b> Bueno</span>
+                </div>
+                <div class="leyenda-item">
+                    <div class="color-box" style="background:#FFFF00"></div>
+                    <span><b>51-100:</b> Moderado</span>
+                </div>
+                <div class="leyenda-item">
+                    <div class="color-box" style="background:#FF7E00"></div>
+                    <span><b>101-150:</b> Poco saludable para sensibles</span>
+                </div>
+                <div class="leyenda-item">
+                    <div class="color-box" style="background:#FF0000"></div>
+                    <span><b>151-200:</b> Poco saludable</span>
+                </div>
+                <div class="leyenda-item">
+                    <div class="color-box" style="background:#8F3F97"></div>
+                    <span><b>201-300:</b> Muy poco saludable</span>
+                </div>
+                <div class="leyenda-item">
+                    <div class="color-box" style="background:#7E0023"></div>
+                    <span><b>301-500:</b> Peligroso</span>
+                </div>
+                <hr style="margin:15px 0;border-top:1px solid #ddd;">
+                <small style="color:#888;font-size:11px;">
+                    ⚠️ Índice aproximado basado en datos satelitales TEMPO (NASA).
+                    No sustituye mediciones oficiales terrestres. Solo propósitos educativos.
+                </small>
+            </div>
+
+            <div id="resultado"></div>
+        </div>
+
+        <div id="mapa"></div>
+    </div>
+
+    <script src="ubicacion.js"></script>
+</body>
+
+</html>
