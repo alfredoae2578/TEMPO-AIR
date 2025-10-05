@@ -47,6 +47,12 @@ type AirQualityLocation = {
   level: AirQualityLevel;
 };
 
+type NotificationSettings = {
+  airQualityAlerts: boolean;
+  dailySummary: boolean;
+  forecastUpdates: boolean;
+};
+
 // Colores actualizados - Azul celeste y verde pastel
 const SKY_BLUE = '#87CEEB';
 const PASTEL_GREEN = '#98D8C8';
@@ -427,6 +433,27 @@ export const AirQualityApp = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [alerts, setAlerts] = useState<AlertData[]>([]);
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(() => {
+    try {
+      const raw = localStorage.getItem('notificationSettings');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return {
+      airQualityAlerts: true,
+      dailySummary: true,
+      forecastUpdates: false,
+    };
+  });
+  const filteredAlerts = React.useMemo(() => {
+    return alerts.filter(a => {
+      // id '3' es pronóstico; id '1' es calidad del aire; id '4' salud (relacionada a calidad del aire)
+      if (!notificationSettings.forecastUpdates && a.id === '3') return false;
+      if (!notificationSettings.airQualityAlerts && (a.id === '1' || a.id === '4')) return false;
+      return true;
+    });
+  }, [alerts, notificationSettings]);
+
+  // Notificaciones nativas del navegador eliminadas
   
   // Generar datos dinámicos basados en el AQI actual
   const cityData = generateCityData(currentAQI);
@@ -465,6 +492,15 @@ export const AirQualityApp = () => {
 
     return () => clearInterval(timestampInterval);
   }, []);
+
+  // Persistir configuración de notificaciones
+  useEffect(() => {
+    try {
+      localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
+    } catch {}
+  }, [notificationSettings]);
+
+  // Sin efectos de notificaciones del navegador
 
   // Función para seleccionar una ciudad del mapa
   const handleCitySelect = (location: AirQualityLocation) => {
@@ -678,7 +714,7 @@ export const AirQualityApp = () => {
           </div>
           <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 hover:bg-[#87CEEB]/10 rounded-full transition-colors">
             <Bell className="w-5 h-5 text-white" />
-            {alerts.length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />}
+            {filteredAlerts.length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />}
           </button>
         </header>
 
@@ -697,7 +733,7 @@ export const AirQualityApp = () => {
               <h3 className="font-bold text-white mb-3">
                 <span>Notificaciones</span>
               </h3>
-              {alerts.map(alert => <div key={alert.id} className="mb-3 last:mb-0 p-3 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#87CEEB]/30">
+              {filteredAlerts.map(alert => <div key={alert.id} className="mb-3 last:mb-0 p-3 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#87CEEB]/30">
                   <div className="flex items-start gap-2">
                     {alert.severity === 'critical' && <AlertCircle className="w-4 h-4 text-[#E67E22] mt-0.5" />}
                     {alert.severity === 'warning' && <AlertTriangle className="w-4 h-4 text-[#F8B739] mt-0.5" />}
@@ -721,7 +757,7 @@ export const AirQualityApp = () => {
           opacity: 0
         }} animate={{
           opacity: 1
-        }} className="p-4 lg:p-6 space-y-4 lg:space-y-6">
+        }} className="p-4 lg:p-6 space-y-4 lg:space-y-6 text-lg lg:text-xl">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 {/* Tarjeta de ICA */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
@@ -729,10 +765,10 @@ export const AirQualityApp = () => {
                     <div className="flex items-center gap-4">
                       <MapPin className="w-5 h-5 text-[#98D8C8] flex-shrink-0" />
                       <div>
-                        <span className="text-sm font-bold text-white">
+                        <span className="text-4xl lg:text-5xl font-bold text-white">
                           <span>{currentLocation.name}</span>
                         </span>
-                        <p className="text-xs text-[#B0E0E6]">
+                        <p className="text-base lg:text-lg text-[#B0E0E6]">
                           <span>{currentLocation.lat.toFixed(4)}°,
                           {currentLocation.lng.toFixed(4)}°</span>
                         </p>
@@ -759,14 +795,14 @@ export const AirQualityApp = () => {
                       </motion.div>
 
                       <div className="text-left">
-                        <h2 className="text-xl lg:text-2xl font-bold text-white mb-2 tracking-wide">
+                        <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2 tracking-wide">
                           <span>Indice de Calidad del Aire</span>
                         </h2>
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#87CEEB]/20 backdrop-blur border border-[#87CEEB]/40" style={{
                       boxShadow: '0 4px 12px rgba(135, 206, 235, 0.2), inset 0 -2px 6px rgba(0, 0, 0, 0.15)'
                     }}>
                           <CheckCircle className="w-4 h-4 text-[#98D8C8]" />
-                          <span className="font-bold text-white text-sm lg:text-base">
+                          <span className="font-bold text-white text-base lg:text-lg">
                             <span>{getAQILabel(aqiLevel)}</span>
                           </span>
                         </div>
@@ -775,7 +811,7 @@ export const AirQualityApp = () => {
                   </div>
 
                   <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 mt-6 border border-[#87CEEB]/30">
-                    <p className="text-sm text-[#B0E0E6] leading-relaxed">
+                    <p className="text-base lg:text-lg text-[#B0E0E6] leading-relaxed">
                       <span>
                         La calidad del aire es aceptable para la mayoria de las personas. Los grupos sensibles deben considerar reducir la actividad prolongada al aire libre.
                       </span>
@@ -785,7 +821,7 @@ export const AirQualityApp = () => {
 
                 {/* Cuadr�cula de contaminantes */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
-                  <h3 className="text-lg font-bold text-white mb-4">
+                  <h3 className="text-2xl font-bold text-white mb-4">
                     <span>Niveles de Contaminantes</span>
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
@@ -793,7 +829,7 @@ export const AirQualityApp = () => {
                   boxShadow: '0 4px 8px rgba(135, 206, 235, 0.15), inset 0 -2px 4px rgba(0, 0, 0, 0.1)'
                 }}>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold text-white">
+                          <span className="text-sm font-bold text-white">
                             <span>{pollutant.name}</span>
                           </span>
                           {pollutant.trend === 'up' && <TrendingUp className="w-3 h-3 text-[#E67E22]" />}
@@ -801,7 +837,7 @@ export const AirQualityApp = () => {
                         </div>
                         <div className="flex items-baseline gap-1">
                           <span className="text-xl font-bold text-white">{pollutant.value}</span>
-                          <span className="text-xs text-[#B0E0E6]">
+                          <span className="text-sm text-[#B0E0E6]">
                             <span>{pollutant.unit}</span>
                           </span>
                         </div>
@@ -817,7 +853,7 @@ export const AirQualityApp = () => {
 
                 {/* Condiciones clim�ticas */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
                     <Cloud className="w-5 h-5 text-[#98D8C8]" />
                     <span>Condiciones Climaticas</span>
                   </h3>
@@ -854,7 +890,7 @@ export const AirQualityApp = () => {
 
                 {/* Índices Atmosféricos */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
                     <Satellite className="w-5 h-5 text-[#98D8C8]" />
                     <span>Índices Atmosféricos</span>
                   </h3>
@@ -862,10 +898,10 @@ export const AirQualityApp = () => {
                     <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
                       <div className="flex items-center gap-3 mb-2">
                         <Activity className="w-5 h-5 text-[#E67E22]" />
-                        <h4 className="font-bold text-white">Aerosol Index</h4>
-                        <span className="ml-auto text-2xl font-bold text-[#E67E22]">{weather.aerosolIndex}</span>
+                        <h4 className="font-bold text-white text-xl">Aerosol Index</h4>
+                        <span className="ml-auto text-3xl font-bold text-[#E67E22]">{weather.aerosolIndex}</span>
                       </div>
-                      <p className="text-xs text-[#B0E0E6] leading-relaxed">
+                      <p className="text-sm text-[#B0E0E6] leading-relaxed">
                         Medición de aerosoles atmosféricos correlacionada con la calidad del aire. 
                         Valores más altos indican mayor presencia de partículas en suspensión.
                       </p>
@@ -873,10 +909,10 @@ export const AirQualityApp = () => {
                     <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
                       <div className="flex items-center gap-3 mb-2">
                         <Sun className="w-5 h-5 text-[#F39C12]" />
-                        <h4 className="font-bold text-white">UV Index</h4>
-                        <span className="ml-auto text-2xl font-bold text-[#F39C12]">{weather.uvIndex}</span>
+                        <h4 className="font-bold text-white text-xl">UV Index</h4>
+                        <span className="ml-auto text-3xl font-bold text-[#F39C12]">{weather.uvIndex}</span>
                       </div>
-                      <p className="text-xs text-[#B0E0E6] leading-relaxed">
+                      <p className="text-sm text-[#B0E0E6] leading-relaxed">
                         Índice de radiación ultravioleta. Valores 0-2: Bajo, 3-5: Moderado, 6-7: Alto, 
                         8-10: Muy Alto, 11+: Extremo. Use protección solar cuando sea necesario.
                       </p>
@@ -886,7 +922,7 @@ export const AirQualityApp = () => {
 
                 {/* Tendencia de 7 d�as */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
-                  <h3 className="text-lg font-bold text-white mb-4">
+                  <h3 className="text-2xl font-bold text-white mb-4">
                     <span>Tendencia de 7 Dias</span>
                   </h3>
                   <ResponsiveContainer width="100%" height={250}>
@@ -944,7 +980,7 @@ export const AirQualityApp = () => {
                 {/* Pron�stico de 24 horas */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-white">
+                    <h3 className="text-2xl font-bold text-white">
                       <span>Pronóstico de 24 Horas</span>
                     </h3>
                     <Calendar className="w-5 h-5 text-[#98D8C8]" />
@@ -980,7 +1016,7 @@ export const AirQualityApp = () => {
 
                 {/* Pron�stico de contaminantes */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
-                  <h3 className="text-lg font-bold text-white mb-4">
+                  <h3 className="text-2xl font-bold text-white mb-4">
                     <span>Pronóstico de Contaminantes</span>
                   </h3>
                   <ResponsiveContainer width="100%" height={300}>
@@ -1013,7 +1049,7 @@ export const AirQualityApp = () => {
 
                 {/* Desglose por hora */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
-                  <h3 className="text-lg font-bold text-white mb-4">
+                  <h3 className="text-2xl font-bold text-white mb-4">
                     <span>Desglose por Hora</span>
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -1247,8 +1283,8 @@ export const AirQualityApp = () => {
                   <h3 className="text-lg font-bold text-white mb-4">
                     <span>Alertas Activas</span>
                   </h3>
-                  {alerts.length > 0 ? <div className="space-y-3">
-                      {alerts.map(alert => <div key={alert.id} className={`p-4 rounded-lg border backdrop-blur ${alert.severity === 'critical' ? 'bg-[#E67E22]/20 border-[#E67E22]/40' : alert.severity === 'warning' ? 'bg-[#F8B739]/20 border-[#F8B739]/40' : 'bg-[#87CEEB]/20 border-[#87CEEB]/40'}`} style={{
+                  {filteredAlerts.length > 0 ? <div className="space-y-3">
+                      {filteredAlerts.map(alert => <div key={alert.id} className={`p-4 rounded-lg border backdrop-blur ${alert.severity === 'critical' ? 'bg-[#E67E22]/20 border-[#E67E22]/40' : alert.severity === 'warning' ? 'bg-[#F8B739]/20 border-[#F8B739]/40' : 'bg-[#87CEEB]/20 border-[#87CEEB]/40'}`} style={{
                   boxShadow: alert.severity === 'critical' ? '0 4px 8px rgba(230, 126, 34, 0.2), inset 0 -2px 4px rgba(0, 0, 0, 0.1)' : alert.severity === 'warning' ? '0 4px 8px rgba(248, 183, 57, 0.2), inset 0 -2px 4px rgba(0, 0, 0, 0.1)' : '0 4px 8px rgba(135, 206, 235, 0.2), inset 0 -2px 4px rgba(0, 0, 0, 0.1)'
                 }}>
                           <div className="flex items-start gap-3">
@@ -1270,6 +1306,19 @@ export const AirQualityApp = () => {
                     </p>}
                 </div>
 
+                {/* Resumen diario (visible solo si está activo) */}
+                {notificationSettings.dailySummary && (
+                  <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
+                    <h3 className="text-lg font-bold text-white mb-2">
+                      <span>Resumen Diario</span>
+                    </h3>
+                    <p className="text-sm text-[#B0E0E6]">
+                      <span>Recibirás un resumen diario de la calidad del aire y pronóstico.
+                      Esta opción está activada.</span>
+                    </p>
+                  </div>
+                )}
+
                 {/* Configuraci�n de notificaciones */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
                   <h3 className="text-lg font-bold text-white mb-4">
@@ -1288,7 +1337,17 @@ export const AirQualityApp = () => {
                         </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                        <input type="checkbox" className="sr-only peer" defaultChecked />
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={notificationSettings.airQualityAlerts}
+                          onChange={(e) =>
+                            setNotificationSettings({
+                              ...notificationSettings,
+                              airQualityAlerts: e.target.checked,
+                            })
+                          }
+                        />
                         <div className="w-11 h-6 bg-[#87CEEB]/20 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#98D8C8]/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#98D8C8]" />
                       </label>
                     </div>
@@ -1304,7 +1363,17 @@ export const AirQualityApp = () => {
                         </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                        <input type="checkbox" className="sr-only peer" defaultChecked />
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={notificationSettings.dailySummary}
+                          onChange={(e) =>
+                            setNotificationSettings({
+                              ...notificationSettings,
+                              dailySummary: e.target.checked,
+                            })
+                          }
+                        />
                         <div className="w-11 h-6 bg-[#87CEEB]/20 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#98D8C8]/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#98D8C8]" />
                       </label>
                     </div>
@@ -1320,7 +1389,17 @@ export const AirQualityApp = () => {
                         </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                        <input type="checkbox" className="sr-only peer" />
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={notificationSettings.forecastUpdates}
+                          onChange={(e) =>
+                            setNotificationSettings({
+                              ...notificationSettings,
+                              forecastUpdates: e.target.checked,
+                            })
+                          }
+                        />
                         <div className="w-11 h-6 bg-[#87CEEB]/20 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#98D8C8]/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#98D8C8]" />
                       </label>
                     </div>
