@@ -268,7 +268,7 @@ const TempoMapInline: React.FC = () => {
           lat, 
           lon, 
           num_coordenadas: 9, 
-          radio: radius * 1000 
+          radio: radius * 1000
         })
       });
 
