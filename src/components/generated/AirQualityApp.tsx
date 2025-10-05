@@ -1091,6 +1091,10 @@ export const AirQualityApp = () => {
                 lng: location.lng,
                 name: location.name
               });
+              // Update AQI if provided from TEMPO satellite data
+              if (location.aqi !== undefined) {
+                setCurrentAQI(location.aqi);
+              }
             }}
           />}
 

@@ -45,7 +45,7 @@ interface MapClickEvent {
 interface TempoMapInlineProps {
   isOpen?: boolean;
   onClose?: () => void;
-  onLocationChange?: (location: { lat: number; lng: number; name: string }) => void;
+  onLocationChange?: (location: { lat: number; lng: number; name: string; aqi?: number }) => void;
 }
 
 const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => {
@@ -166,7 +166,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
       map.setView([lat, lon], 13);
     }
     
-    // Call the onLocationChange prop if provided
+    // Call the onLocationChange prop if provided (without AQI initially)
     if (onLocationChange) {
       onLocationChange({ lat, lng: lon, name });
     }
@@ -307,6 +307,16 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
       const data: TempoResponse = await response.json();
       setResults(data.resultados);
 
+      // Calculate average AQI from results with data and pass to parent
+      const pointsWithData = data.resultados.filter(r => r.tiene_datos);
+      if (pointsWithData.length > 0 && onLocationChange) {
+        const averageAQI = Math.round(
+          pointsWithData.reduce((sum, result) => sum + result.aqi_satelital, 0) / pointsWithData.length
+        );
+        onLocationChange({ lat, lng: lon, name, aqi: averageAQI });
+      }
+
+      // ...existing code for map visualization...
       if (map) {
         await import('leaflet').then((L) => {
           const newLayers: any[] = [];
@@ -324,8 +334,6 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
             .bindPopup(`<b>📍 Ubicación consulta</b><br>${name}<br>${lat.toFixed(6)}, ${lon.toFixed(6)}`);
           newLayers.push(centralMarker);
 
-          const pointsWithData = data.resultados.filter(r => r.tiene_datos);
-          
           // Heat zones
           pointsWithData.forEach((item, index) => {
             const zoneRadius = 3000;
