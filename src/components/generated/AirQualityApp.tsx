@@ -36,6 +36,7 @@ type AlertData = {
   severity: 'info' | 'warning' | 'critical';
   message: string;
   timestamp: string;
+  createdAt: Date;
 };
 type AirQualityLocation = {
   id: string;
@@ -234,6 +235,20 @@ const formatTime = (hour: number): string => {
   return `${hour - 12} PM`;
 };
 
+// Función para calcular el tiempo transcurrido desde una fecha
+const getTimeAgo = (date: Date): string => {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  
+  if (diffMinutes < 1) return 'Ahora mismo';
+  if (diffMinutes < 60) return `Hace ${diffMinutes} minuto${diffMinutes !== 1 ? 's' : ''}`;
+  if (diffHours < 24) return `Hace ${diffHours} hora${diffHours !== 1 ? 's' : ''}`;
+  return `Hace ${diffDays} día${diffDays !== 1 ? 's' : ''}`;
+};
+
 // Función para generar datos dinámicos basados en la ciudad
 const generateCityData = (aqi: number) => {
   const level = calculateAQILevel(aqi);
@@ -312,6 +327,94 @@ const generateCityData = (aqi: number) => {
   return { pollutants, weather, forecastData, historicalData };
 };
 
+// Función para generar alertas dinámicas basadas en el AQI y hora actual
+const generateDynamicAlerts = (aqi: number, locationName: string): AlertData[] => {
+  const alerts: AlertData[] = [];
+  const level = calculateAQILevel(aqi);
+  const now = new Date();
+  const currentHour = now.getHours();
+  
+  // Alerta 1: Basada en el nivel de AQI (siempre se genera)
+  const hoursAgo1 = Math.floor(Math.random() * 3) + 1; // 1-3 horas atrás
+  const alertTime1 = new Date(now.getTime() - hoursAgo1 * 60 * 60 * 1000);
+  
+  if (level === 'hazardous' || level === 'very-unhealthy') {
+    alerts.push({
+      id: '1',
+      severity: 'critical',
+      message: `Alerta crítica: La calidad del aire en ${locationName} ha alcanzado niveles peligrosos. Se recomienda permanecer en interiores.`,
+      timestamp: getTimeAgo(alertTime1),
+      createdAt: alertTime1
+    });
+  } else if (level === 'unhealthy' || level === 'unhealthy-sensitive') {
+    alerts.push({
+      id: '1',
+      severity: 'warning',
+      message: `La calidad del aire en ${locationName} puede afectar a grupos sensibles. Considere reducir actividades al aire libre.`,
+      timestamp: getTimeAgo(alertTime1),
+      createdAt: alertTime1
+    });
+  } else if (level === 'moderate') {
+    alerts.push({
+      id: '1',
+      severity: 'warning',
+      message: `Calidad del aire moderada en ${locationName}. Los grupos sensibles deben considerar limitar la exposición prolongada.`,
+      timestamp: getTimeAgo(alertTime1),
+      createdAt: alertTime1
+    });
+  } else {
+    // Para niveles "good" también mostrar una alerta informativa
+    alerts.push({
+      id: '1',
+      severity: 'info',
+      message: `La calidad del aire en ${locationName} es buena. Es un buen momento para actividades al aire libre.`,
+      timestamp: getTimeAgo(alertTime1),
+      createdAt: alertTime1
+    });
+  }
+  
+  // Alerta 2: Actualización de datos satelitales (siempre presente)
+  const updateHoursAgo = Math.floor(Math.random() * 2) + 3; // 3-4 horas atrás
+  const updateTime = new Date(now.getTime() - updateHoursAgo * 60 * 60 * 1000);
+  alerts.push({
+    id: '2',
+    severity: 'info',
+    message: `Los datos del satélite NASA TEMPO se han actualizado con las últimas mediciones para ${locationName}.`,
+    timestamp: getTimeAgo(updateTime),
+    createdAt: updateTime
+  });
+  
+  // Alerta 3: Pronóstico (aleatoria basada en la hora)
+  if (currentHour >= 6 && currentHour < 18 && Math.random() > 0.4) {
+    const nextHours = Math.floor(Math.random() * 4) + 2; // 2-5 horas
+    const forecastLevel = aqi > 100 ? 'incrementar' : 'mejorar';
+    const forecastHoursAgo = Math.floor(Math.random() * 2) + 1;
+    const forecastTime = new Date(now.getTime() - forecastHoursAgo * 60 * 60 * 1000);
+    alerts.push({
+      id: '3',
+      severity: aqi > 100 ? 'warning' : 'info',
+      message: `Se espera que la calidad del aire ${forecastLevel} en las próximas ${nextHours} horas en ${locationName}.`,
+      timestamp: getTimeAgo(forecastTime),
+      createdAt: forecastTime
+    });
+  }
+  
+  // Alerta 4: Recomendación de salud (si AQI > 100)
+  if (aqi > 100 && Math.random() > 0.5) {
+    const healthHoursAgo = Math.floor(Math.random() * 3) + 1;
+    const healthTime = new Date(now.getTime() - healthHoursAgo * 60 * 60 * 1000);
+    alerts.push({
+      id: '4',
+      severity: 'warning',
+      message: 'Grupos sensibles (niños, adultos mayores, personas con problemas respiratorios) deben evitar ejercicio intenso al aire libre.',
+      timestamp: getTimeAgo(healthTime),
+      createdAt: healthTime
+    });
+  }
+  
+  return alerts;
+};
+
 // @component: AirQualityApp
 export const AirQualityApp = () => {
   const [currentLocation, setCurrentLocation] = useState({
@@ -323,6 +426,7 @@ export const AirQualityApp = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'forecast' | 'map' | 'alerts'>('overview');
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [alerts, setAlerts] = useState<AlertData[]>([]);
   
   // Generar datos dinámicos basados en el AQI actual
   const cityData = generateCityData(currentAQI);
@@ -331,18 +435,36 @@ export const AirQualityApp = () => {
   const forecastData = cityData.forecastData;
   const historicalData = cityData.historicalData;
   
-  const alerts: AlertData[] = [{
-    id: '1',
-    severity: 'warning',
-    message: 'Se espera que la calidad del aire alcance niveles poco saludables para grupos sensibles a las 3 PM',
-    timestamp: 'Hace 2 horas'
-  }, {
-    id: '2',
-    severity: 'info',
-    message: 'Los datos del satélite TEMPO se han actualizado con las últimas mediciones',
-    timestamp: 'Hace 4 horas'
-  }];
   const aqiLevel = calculateAQILevel(currentAQI);
+
+  // Actualizar alertas cada hora y cuando cambie la ubicación o AQI
+  useEffect(() => {
+    // Generar alertas iniciales
+    const newAlerts = generateDynamicAlerts(currentAQI, currentLocation.name);
+    setAlerts(newAlerts);
+
+    // Actualizar alertas cada hora (3600000 ms)
+    const alertInterval = setInterval(() => {
+      const updatedAlerts = generateDynamicAlerts(currentAQI, currentLocation.name);
+      setAlerts(updatedAlerts);
+    }, 3600000); // 1 hora en milisegundos
+
+    return () => clearInterval(alertInterval);
+  }, [currentAQI, currentLocation.name]);
+
+  // Actualizar los timestamps de las alertas cada minuto para que se actualicen dinámicamente
+  useEffect(() => {
+    const timestampInterval = setInterval(() => {
+      setAlerts(prevAlerts => 
+        prevAlerts.map(alert => ({
+          ...alert,
+          timestamp: getTimeAgo(alert.createdAt)
+        }))
+      );
+    }, 60000); // 1 minuto en milisegundos
+
+    return () => clearInterval(timestampInterval);
+  }, []);
 
   // Función para seleccionar una ciudad del mapa
   const handleCitySelect = (location: AirQualityLocation) => {
