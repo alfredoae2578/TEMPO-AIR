@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Satellite, Activity } from 'lucide-react';
 
 const theme: Theme = 'dark';
+// only use 'centered' container for standalone components, never for full page apps or websites.
 const container: Container = 'none';
 
 function App() {

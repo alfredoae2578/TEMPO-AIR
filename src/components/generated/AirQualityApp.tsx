@@ -18,6 +18,8 @@ type WeatherData = {
   windSpeed: number;
   windDirection: string;
   pressure: number;
+  aerosolIndex: number;
+  uvIndex: number;
 };
 type ForecastData = {
   time: string;
@@ -35,6 +37,7 @@ type AlertData = {
   severity: 'info' | 'warning' | 'critical';
   message: string;
   timestamp: string;
+  createdAt: Date;
 };
 type AirQualityLocation = {
   id: string;
@@ -92,7 +95,7 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'moderate'
 }, {
   id: '2',
-  name: 'Los �ngeles',
+  name: 'Los Ángeles',
   lat: 34.0522,
   lng: -118.2437,
   aqi: 125,
@@ -106,7 +109,7 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'moderate'
 }, {
   id: '4',
-  name: 'Par�s',
+  name: 'París',
   lat: 48.8566,
   lng: 2.3522,
   aqi: 55,
@@ -141,21 +144,21 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'unhealthy-sensitive'
 }, {
   id: '9',
-  name: 'S�dney',
+  name: 'Sídney',
   lat: -33.8688,
   lng: 151.2093,
   aqi: 35,
   level: 'good'
 }, {
   id: '10',
-  name: 'S�o Paulo',
+  name: 'São Paulo',
   lat: -23.5505,
   lng: -46.6333,
   aqi: 72,
   level: 'moderate'
 }, {
   id: '11',
-  name: 'Ciudad de M�xico',
+  name: 'Ciudad de México',
   lat: 19.4326,
   lng: -99.1332,
   aqi: 98,
@@ -169,7 +172,7 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'unhealthy'
 }, {
   id: '13',
-  name: 'Mosc�',
+  name: 'Moscú',
   lat: 55.7558,
   lng: 37.6173,
   aqi: 68,
@@ -183,7 +186,7 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'moderate'
 }, {
   id: '15',
-  name: 'Dub�i',
+  name: 'Dubái',
   lat: 25.2048,
   lng: 55.2708,
   aqi: 88,
@@ -197,7 +200,7 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'good'
 }, {
   id: '17',
-  name: 'Berl�n',
+  name: 'Berlín',
   lat: 52.5200,
   lng: 13.4050,
   aqi: 48,
@@ -211,7 +214,7 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'moderate'
 }, {
   id: '19',
-  name: 'Se�l',
+  name: 'Seúl',
   lat: 37.5665,
   lng: 126.9780,
   aqi: 78,
@@ -225,142 +228,266 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'unhealthy-sensitive'
 }];
 
+// Función para formatear la hora en formato de 12 horas con AM/PM
+const formatTime = (hour: number): string => {
+  if (hour === 0) return '12 AM';
+  if (hour === 12) return '12 PM';
+  if (hour < 12) return `${hour} AM`;
+  return `${hour - 12} PM`;
+};
+
+// Función para calcular el tiempo transcurrido desde una fecha
+const getTimeAgo = (date: Date): string => {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  
+  if (diffMinutes < 1) return 'Ahora mismo';
+  if (diffMinutes < 60) return `Hace ${diffMinutes} minuto${diffMinutes !== 1 ? 's' : ''}`;
+  if (diffHours < 24) return `Hace ${diffHours} hora${diffHours !== 1 ? 's' : ''}`;
+  return `Hace ${diffDays} día${diffDays !== 1 ? 's' : ''}`;
+};
+
+// Función para generar datos dinámicos basados en la ciudad
+const generateCityData = (aqi: number) => {
+  const level = calculateAQILevel(aqi);
+  const baseMultiplier = aqi / 85; // 85 es el AQI de Nueva York (base)
+  
+  const pollutants: PollutantData[] = [{
+    name: 'PM2.5',
+    value: Math.round(35.2 * baseMultiplier * 10) / 10,
+    unit: 'μg/m³',
+    level: level,
+    trend: Math.random() > 0.5 ? 'down' : 'up'
+  }, {
+    name: 'NO2',
+    value: Math.round(42.8 * baseMultiplier * 10) / 10,
+    unit: 'ppb',
+    level: calculateAQILevel(Math.min(aqi + 10, 200)),
+    trend: Math.random() > 0.3 ? 'stable' : 'up'
+  }, {
+    name: 'O3',
+    value: Math.round(65.4 * baseMultiplier * 10) / 10,
+    unit: 'ppb',
+    level: level,
+    trend: Math.random() > 0.5 ? 'up' : 'down'
+  }, {
+    name: 'PM10',
+    value: Math.round(58.1 * baseMultiplier * 10) / 10,
+    unit: 'μg/m³',
+    level: level,
+    trend: 'down'
+  }];
+
+  const weather: WeatherData = {
+    temp: Math.round(15 + Math.random() * 20),
+    humidity: Math.round(50 + Math.random() * 30),
+    windSpeed: Math.round((10 + Math.random() * 15) * 10) / 10,
+    windDirection: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.floor(Math.random() * 8)],
+    pressure: 1013,
+    // Aerosol Index correlacionado con AQI (más contaminación = más aerosoles)
+    aerosolIndex: Math.round((aqi / 50) * 10) / 10, // Rango típico 0-5
+    // UV Index simulado (rango 0-11+)
+    uvIndex: Math.round(2 + Math.random() * 8) // Rango 2-10
+  };
+
+  // Obtener la hora actual del sistema y generar pronóstico desde la próxima hora
+  const now = new Date();
+  const currentHour = now.getHours();
+  const startHour = (currentHour + 1) % 24; // Comenzar desde la próxima hora
+  
+  // Generar 8 puntos de tiempo (cada 3 horas para completar 24 horas)
+  const forecastData: ForecastData[] = [];
+  const aqiMultipliers = [1.0, 1.08, 1.04, 0.88, 0.80, 0.73, 0.82, 0.94];
+  
+  for (let i = 0; i < 8; i++) {
+    const forecastHour = (startHour + (i * 3)) % 24;
+    const multiplier = aqiMultipliers[i];
+    
+    forecastData.push({
+      time: formatTime(forecastHour),
+      aqi: Math.round(aqi * multiplier),
+      no2: Math.round(pollutants[1].value * (multiplier * 0.98)),
+      pm25: Math.round(pollutants[0].value * multiplier),
+      o3: Math.round(pollutants[2].value * (multiplier * 1.02))
+    });
+  }
+
+  const historicalData: HistoricalData[] = [
+    { date: 'Lun', aqi: Math.round(aqi * 0.76) },
+    { date: 'Mar', aqi: Math.round(aqi * 0.92) },
+    { date: 'Mié', aqi: Math.round(aqi * 0.96) },
+    { date: 'Jue', aqi: Math.round(aqi * 0.88) },
+    { date: 'Vie', aqi: Math.round(aqi * 1.04) },
+    { date: 'Sáb', aqi: Math.round(aqi * 1.00) },
+    { date: 'Dom', aqi: aqi }
+  ];
+
+  return { pollutants, weather, forecastData, historicalData };
+};
+
+// Función para generar alertas dinámicas basadas en el AQI y hora actual
+const generateDynamicAlerts = (aqi: number, locationName: string): AlertData[] => {
+  const alerts: AlertData[] = [];
+  const level = calculateAQILevel(aqi);
+  const now = new Date();
+  const currentHour = now.getHours();
+  
+  // Alerta 1: Basada en el nivel de AQI (siempre se genera)
+  const hoursAgo1 = Math.floor(Math.random() * 3) + 1; // 1-3 horas atrás
+  const alertTime1 = new Date(now.getTime() - hoursAgo1 * 60 * 60 * 1000);
+  
+  if (level === 'hazardous' || level === 'very-unhealthy') {
+    alerts.push({
+      id: '1',
+      severity: 'critical',
+      message: `Alerta crítica: La calidad del aire en ${locationName} ha alcanzado niveles peligrosos. Se recomienda permanecer en interiores.`,
+      timestamp: getTimeAgo(alertTime1),
+      createdAt: alertTime1
+    });
+  } else if (level === 'unhealthy' || level === 'unhealthy-sensitive') {
+    alerts.push({
+      id: '1',
+      severity: 'warning',
+      message: `La calidad del aire en ${locationName} puede afectar a grupos sensibles. Considere reducir actividades al aire libre.`,
+      timestamp: getTimeAgo(alertTime1),
+      createdAt: alertTime1
+    });
+  } else if (level === 'moderate') {
+    alerts.push({
+      id: '1',
+      severity: 'warning',
+      message: `Calidad del aire moderada en ${locationName}. Los grupos sensibles deben considerar limitar la exposición prolongada.`,
+      timestamp: getTimeAgo(alertTime1),
+      createdAt: alertTime1
+    });
+  } else {
+    // Para niveles "good" también mostrar una alerta informativa
+    alerts.push({
+      id: '1',
+      severity: 'info',
+      message: `La calidad del aire en ${locationName} es buena. Es un buen momento para actividades al aire libre.`,
+      timestamp: getTimeAgo(alertTime1),
+      createdAt: alertTime1
+    });
+  }
+  
+  // Alerta 2: Actualización de datos satelitales (siempre presente)
+  const updateHoursAgo = Math.floor(Math.random() * 2) + 3; // 3-4 horas atrás
+  const updateTime = new Date(now.getTime() - updateHoursAgo * 60 * 60 * 1000);
+  alerts.push({
+    id: '2',
+    severity: 'info',
+    message: `Los datos del satélite NASA TEMPO se han actualizado con las últimas mediciones para ${locationName}.`,
+    timestamp: getTimeAgo(updateTime),
+    createdAt: updateTime
+  });
+  
+  // Alerta 3: Pronóstico (aleatoria basada en la hora)
+  if (currentHour >= 6 && currentHour < 18 && Math.random() > 0.4) {
+    const nextHours = Math.floor(Math.random() * 4) + 2; // 2-5 horas
+    const forecastLevel = aqi > 100 ? 'incrementar' : 'mejorar';
+    const forecastHoursAgo = Math.floor(Math.random() * 2) + 1;
+    const forecastTime = new Date(now.getTime() - forecastHoursAgo * 60 * 60 * 1000);
+    alerts.push({
+      id: '3',
+      severity: aqi > 100 ? 'warning' : 'info',
+      message: `Se espera que la calidad del aire ${forecastLevel} en las próximas ${nextHours} horas en ${locationName}.`,
+      timestamp: getTimeAgo(forecastTime),
+      createdAt: forecastTime
+    });
+  }
+  
+  // Alerta 4: Recomendación de salud (si AQI > 100)
+  if (aqi > 100 && Math.random() > 0.5) {
+    const healthHoursAgo = Math.floor(Math.random() * 3) + 1;
+    const healthTime = new Date(now.getTime() - healthHoursAgo * 60 * 60 * 1000);
+    alerts.push({
+      id: '4',
+      severity: 'warning',
+      message: 'Grupos sensibles (niños, adultos mayores, personas con problemas respiratorios) deben evitar ejercicio intenso al aire libre.',
+      timestamp: getTimeAgo(healthTime),
+      createdAt: healthTime
+    });
+  }
+  
+  return alerts;
+};
+
 // @component: AirQualityApp
 export const AirQualityApp = () => {
   const [currentLocation, setCurrentLocation] = useState({
     lat: 40.7128,
     lng: -74.0060,
-    name: 'Nueva York, NY'
+    name: 'Nueva York'
   });
   const [currentAQI, setCurrentAQI] = useState(85);
   const [activeTab, setActiveTab] = useState<'overview' | 'forecast' | 'map' | 'alerts'>('overview');
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const pollutants: PollutantData[] = [{
-    name: 'PM2.5',
-    value: 35.2,
-    unit: '�g/m�',
-    level: 'moderate',
-    trend: 'down'
-  }, {
-    name: 'NO2',
-    value: 42.8,
-    unit: 'ppb',
-    level: 'good',
-    trend: 'stable'
-  }, {
-    name: 'O3',
-    value: 65.4,
-    unit: 'ppb',
-    level: 'moderate',
-    trend: 'up'
-  }, {
-    name: 'PM10',
-    value: 58.1,
-    unit: '�g/m�',
-    level: 'moderate',
-    trend: 'down'
-  }];
-  const weather: WeatherData = {
-    temp: 22,
-    humidity: 65,
-    windSpeed: 13.7,
-    windDirection: 'NE',
-    pressure: 1013
-  };
-  const forecastData: ForecastData[] = [{
-    time: '12 PM',
-    aqi: 85,
-    no2: 42,
-    pm25: 35,
-    o3: 65
-  }, {
-    time: '3 PM',
-    aqi: 92,
-    no2: 45,
-    pm25: 38,
-    o3: 70
-  }, {
-    time: '6 PM',
-    aqi: 88,
-    no2: 43,
-    pm25: 36,
-    o3: 68
-  }, {
-    time: '9 PM',
-    aqi: 75,
-    no2: 38,
-    pm25: 30,
-    o3: 60
-  }, {
-    time: '12 AM',
-    aqi: 68,
-    no2: 35,
-    pm25: 28,
-    o3: 55
-  }, {
-    time: '3 AM',
-    aqi: 62,
-    no2: 32,
-    pm25: 25,
-    o3: 50
-  }, {
-    time: '6 AM',
-    aqi: 70,
-    no2: 36,
-    pm25: 29,
-    o3: 58
-  }, {
-    time: '9 AM',
-    aqi: 80,
-    no2: 40,
-    pm25: 33,
-    o3: 64
-  }];
-  const historicalData: HistoricalData[] = [{
-    date: 'Lun',
-    aqi: 65
-  }, {
-    date: 'Mar',
-    aqi: 78
-  }, {
-    date: 'Mi�',
-    aqi: 82
-  }, {
-    date: 'Jue',
-    aqi: 75
-  }, {
-    date: 'Vie',
-    aqi: 88
-  }, {
-    date: 'S�b',
-    aqi: 85
-  }, {
-    date: 'Dom',
-    aqi: 85
-  }];
-  const alerts: AlertData[] = [{
-    id: '1',
-    severity: 'warning',
-    message: 'Se espera que la calidad del aire alcance niveles poco saludables para grupos sensibles a las 3 PM',
-    timestamp: 'Hace 2 horas'
-  }, {
-    id: '2',
-    severity: 'info',
-    message: 'Los datos del sat�lite TEMPO se han actualizado con las �ltimas mediciones',
-    timestamp: 'Hace 4 horas'
-  }];
+  const [alerts, setAlerts] = useState<AlertData[]>([]);
+  
+  // Generar datos dinámicos basados en el AQI actual
+  const cityData = generateCityData(currentAQI);
+  const pollutants = cityData.pollutants;
+  const weather = cityData.weather;
+  const forecastData = cityData.forecastData;
+  const historicalData = cityData.historicalData;
+  
   const aqiLevel = calculateAQILevel(currentAQI);
+
+  // Actualizar alertas cada hora y cuando cambie la ubicación o AQI
+  useEffect(() => {
+    // Generar alertas iniciales
+    const newAlerts = generateDynamicAlerts(currentAQI, currentLocation.name);
+    setAlerts(newAlerts);
+
+    // Actualizar alertas cada hora (3600000 ms)
+    const alertInterval = setInterval(() => {
+      const updatedAlerts = generateDynamicAlerts(currentAQI, currentLocation.name);
+      setAlerts(updatedAlerts);
+    }, 3600000); // 1 hora en milisegundos
+
+    return () => clearInterval(alertInterval);
+  }, [currentAQI, currentLocation.name]);
+
+  // Actualizar los timestamps de las alertas cada minuto para que se actualicen dinámicamente
+  useEffect(() => {
+    const timestampInterval = setInterval(() => {
+      setAlerts(prevAlerts => 
+        prevAlerts.map(alert => ({
+          ...alert,
+          timestamp: getTimeAgo(alert.createdAt)
+        }))
+      );
+    }, 60000); // 1 minuto en milisegundos
+
+    return () => clearInterval(timestampInterval);
+  }, []);
+
+  // Función para seleccionar una ciudad del mapa
+  const handleCitySelect = (location: AirQualityLocation) => {
+    setCurrentLocation({
+      lat: location.lat,
+      lng: location.lng,
+      name: location.name
+    });
+    setCurrentAQI(location.aqi);
+    // Cambiar automáticamente a la pestaña de resumen
+    setActiveTab('overview');
+  };
   useEffect(() => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(position => {
         setCurrentLocation({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-          name: 'Ubicaci�n actual'
+          name: 'Ubicación actual'
         });
       }, error => {
-        console.log('Acceso a ubicaci�n denegado:', error);
+        console.log('Acceso a ubicación denegado:', error);
       });
     }
   }, []);
@@ -372,26 +499,21 @@ export const AirQualityApp = () => {
     {/* Fondo de la Tierra 3D */}
     <EarthBackground />
     
-    {/* Overlay semi-transparente para mejorar la legibilidad */}
-    <div className="absolute inset-0 bg-gradient-to-br from-[#1a3a52]/40 via-[#2d5a7b]/30 to-[#1a3a52]/40 z-10" />
-    
+    {/* Overlay semi-transparente para mejorar la legibilidad (15% más opacidad) */}
+    <div className="absolute inset-0 bg-gradient-to-br from-[#1a3a52]/55 via-[#2d5a7b]/45 to-[#1a3a52]/55 z-10" />
+
     {/* Contenido principal con z-index mayor */}
     <div className="relative z-20 h-full w-full flex">
       {/* Barra lateral de escritorio */}
       <aside className="hidden lg:flex lg:flex-col lg:w-72 bg-gradient-to-b from-[#2d5a7b]/60 to-[#1a3a52]/60 backdrop-blur-sm border-r-2 border-[#87CEEB]/30 shadow-2xl">
-        <div className="p-6 border-b border-[#87CEEB]/20">
-          <div className="flex items-center gap-3 mb-6">
+        <div className="p-3 border-b border-[#87CEEB]/20">
+          <div className="flex items-center justify-center">
+            {/* Centered extra large logo with white shadow effect */}
             <div className="relative">
-              <Satellite className="w-10 h-10 text-[#87CEEB]" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white tracking-wide">
-                <span>NASA TEMPO</span>
-              </h1>
-              <p className="text-xs text-[#B0E0E6]">
-                <span>Monitor de Calidad del Aire</span>
-              </p>
+              <img src="/logo.png" alt="App Logo" className="w-64 h-64 object-contain" style={{
+                filter: 'drop-shadow(0 4px 8px rgba(255, 255, 255, 0.3)) drop-shadow(0 2px 4px rgba(255, 255, 255, 0.5))'
+              }} />
+              <div className="absolute -top-1 -right-1 w-7 h-7 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />
             </div>
           </div>
         </div>
@@ -407,7 +529,7 @@ export const AirQualityApp = () => {
           boxShadow: '0 8px 16px rgba(135, 206, 235, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.2)'
         } : {}}>
             <TrendingUp className="w-5 h-5" />
-            <span>Pron�stico</span>
+            <span>Pronóstico</span>
           </button>
           <button onClick={() => setActiveTab('map')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-semibold ${activeTab === 'map' ? 'bg-gradient-to-r from-[#87CEEB] to-[#5DADE2] text-white shadow-lg shadow-[#87CEEB]/40' : 'text-[#B0E0E6] hover:bg-[#87CEEB]/10'}`} style={activeTab === 'map' ? {
           boxShadow: '0 8px 16px rgba(135, 206, 235, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.2)'
@@ -431,20 +553,20 @@ export const AirQualityApp = () => {
             <div className="flex items-center gap-2 mb-2">
               <MapPin className="w-4 h-4 text-[#98D8C8]" />
               <span className="text-xs font-bold text-white">
-                <span>Ubicaci�n Actual</span>
+                <span>Ubicación Actual</span>
               </span>
             </div>
             <p className="text-sm text-white font-semibold">
               <span>{currentLocation.name}</span>
             </p>
             <p className="text-xs text-[#B0E0E6] mt-1">
-              <span>{currentLocation.lat.toFixed(4)}�, {currentLocation.lng.toFixed(4)}�</span>
+              <span>{currentLocation.lat.toFixed(4)}°, {currentLocation.lng.toFixed(4)}°</span>
             </p>
           </div>
         </div>
       </aside>
 
-      {/* Superposici�n de barra lateral m�vil */}
+      {/* Superposicion de barra lateral movil */}
       <AnimatePresence>
         {sidebarOpen && <motion.div initial={{
         opacity: 0
@@ -464,7 +586,7 @@ export const AirQualityApp = () => {
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <Satellite className="w-8 h-8 text-[#87CEEB]" />
+                      <img src="/logo.png" alt="App Logo" className="w-8 h-8 object-contain" />
                       <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />
                     </div>
                     <div>
@@ -499,7 +621,7 @@ export const AirQualityApp = () => {
               boxShadow: '0 8px 16px rgba(135, 206, 235, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.2)'
             } : {}}>
                   <TrendingUp className="w-5 h-5" />
-                  <span>Pron�stico</span>
+                  <span>Pronóstico</span>
                 </button>
                 <button onClick={() => {
               setActiveTab('map');
@@ -529,7 +651,7 @@ export const AirQualityApp = () => {
 
       {/* Contenido principal */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Encabezado m�vil/escritorio */}
+        {/* Encabezado movil/escritorio */}
         <header className="bg-gradient-to-r from-[#2d5a7b]/60 to-[#4A90A4]/60 backdrop-blur-sm shadow-lg p-4 flex items-center justify-between sticky top-0 z-30 border-b-2 border-[#87CEEB]/30">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 hover:bg-[#87CEEB]/10 rounded-full transition-colors">
@@ -537,7 +659,7 @@ export const AirQualityApp = () => {
             </button>
             <div className="lg:hidden flex items-center gap-2">
               <div className="relative">
-                <Satellite className="w-6 h-6 text-[#87CEEB]" />
+                <img src="/logo.png" alt="App Logo" className="w-6 h-6 object-contain" />
                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />
               </div>
               <div>
@@ -548,7 +670,7 @@ export const AirQualityApp = () => {
             </div>
             <div className="hidden lg:block">
               <h2 className="text-xl font-bold text-white capitalize">
-                <span>{activeTab === 'overview' ? 'Resumen' : activeTab === 'forecast' ? 'Pron�stico' : activeTab === 'map' ? 'Mapa Global' : 'Alertas'}</span>
+                <span>{activeTab === 'overview' ? 'Resumen' : activeTab === 'forecast' ? 'Pronóstico' : activeTab === 'map' ? 'Mapa Global' : 'Alertas'}</span>
               </h2>
               <p className="text-xs text-[#B0E0E6]">
                 <span>Monitoreo de calidad del aire en tiempo real</span>
@@ -612,7 +734,8 @@ export const AirQualityApp = () => {
                           <span>{currentLocation.name}</span>
                         </span>
                         <p className="text-xs text-[#B0E0E6]">
-                          <span>{currentLocation.lat.toFixed(4)}�, {currentLocation.lng.toFixed(4)}�</span>
+                          <span>{currentLocation.lat.toFixed(4)}°,
+                          {currentLocation.lng.toFixed(4)}°</span>
                         </p>
                       </div>
                     </div>
@@ -638,7 +761,7 @@ export const AirQualityApp = () => {
 
                       <div className="text-left">
                         <h2 className="text-xl lg:text-2xl font-bold text-white mb-2 tracking-wide">
-                          <span>�ndice de Calidad del Aire</span>
+                          <span>Indice de Calidad del Aire</span>
                         </h2>
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#87CEEB]/20 backdrop-blur border border-[#87CEEB]/40" style={{
                       boxShadow: '0 4px 12px rgba(135, 206, 235, 0.2), inset 0 -2px 6px rgba(0, 0, 0, 0.15)'
@@ -655,7 +778,7 @@ export const AirQualityApp = () => {
                   <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 mt-6 border border-[#87CEEB]/30">
                     <p className="text-sm text-[#B0E0E6] leading-relaxed">
                       <span>
-                        La calidad del aire es aceptable para la mayor�a de las personas. Los grupos sensibles deben considerar reducir la actividad prolongada al aire libre.
+                        La calidad del aire es aceptable para la mayoria de las personas. Los grupos sensibles deben considerar reducir la actividad prolongada al aire libre.
                       </span>
                     </p>
                   </div>
@@ -697,14 +820,14 @@ export const AirQualityApp = () => {
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
                   <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                     <Cloud className="w-5 h-5 text-[#98D8C8]" />
-                    <span>Condiciones Clim�ticas</span>
+                    <span>Condiciones Climaticas</span>
                   </h3>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-3 bg-[#87CEEB]/10 backdrop-blur rounded-xl border border-[#87CEEB]/30" style={{
                   boxShadow: '0 4px 8px rgba(135, 206, 235, 0.15), inset 0 -2px 4px rgba(0, 0, 0, 0.1)'
                 }}>
                       <Sun className="w-6 h-6 text-[#F8B739] mx-auto mb-2" />
-                      <p className="text-2xl font-bold text-white">{weather.temp}�</p>
+                      <p className="text-2xl font-bold text-white">{weather.temp}°</p>
                       <p className="text-xs text-[#B0E0E6] mt-1">
                         <span>Temperatura</span>
                       </p>
@@ -730,10 +853,42 @@ export const AirQualityApp = () => {
                   </div>
                 </div>
 
+                {/* Índices Atmosféricos */}
+                <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <Satellite className="w-5 h-5 text-[#98D8C8]" />
+                    <span>Índices Atmosféricos</span>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Activity className="w-5 h-5 text-[#E67E22]" />
+                        <h4 className="font-bold text-white">Aerosol Index</h4>
+                        <span className="ml-auto text-2xl font-bold text-[#E67E22]">{weather.aerosolIndex}</span>
+                      </div>
+                      <p className="text-xs text-[#B0E0E6] leading-relaxed">
+                        Medición de aerosoles atmosféricos correlacionada con la calidad del aire. 
+                        Valores más altos indican mayor presencia de partículas en suspensión.
+                      </p>
+                    </div>
+                    <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Sun className="w-5 h-5 text-[#F39C12]" />
+                        <h4 className="font-bold text-white">UV Index</h4>
+                        <span className="ml-auto text-2xl font-bold text-[#F39C12]">{weather.uvIndex}</span>
+                      </div>
+                      <p className="text-xs text-[#B0E0E6] leading-relaxed">
+                        Índice de radiación ultravioleta. Valores 0-2: Bajo, 3-5: Moderado, 6-7: Alto, 
+                        8-10: Muy Alto, 11+: Extremo. Use protección solar cuando sea necesario.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Tendencia de 7 d�as */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
                   <h3 className="text-lg font-bold text-white mb-4">
-                    <span>Tendencia de 7 D�as</span>
+                    <span>Tendencia de 7 Dias</span>
                   </h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <AreaChart data={historicalData}>
@@ -772,11 +927,26 @@ export const AirQualityApp = () => {
           opacity: 1
         }} className="p-4 lg:p-6 space-y-4 lg:space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                {/* Información de la ciudad seleccionada */}
+                <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-4 border border-[#87CEEB]/30 lg:col-span-2">
+                  <div className="flex items-center gap-4">
+                    <MapPin className="w-5 h-5 text-[#98D8C8] flex-shrink-0" />
+                    <div className="flex-1">
+                      <span className="text-base font-bold text-white">
+                        <span>Pronóstico para {currentLocation.name}</span>
+                      </span>
+                      <p className="text-xs text-[#B0E0E6]">
+                        <span>ICA Actual: {currentAQI} - {getAQILabel(aqiLevel)}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
                 {/* Pron�stico de 24 horas */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-white">
-                      <span>Pron�stico de 24 Horas</span>
+                      <span>Pronóstico de 24 Horas</span>
                     </h3>
                     <Calendar className="w-5 h-5 text-[#98D8C8]" />
                   </div>
@@ -812,7 +982,7 @@ export const AirQualityApp = () => {
                 {/* Pron�stico de contaminantes */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
                   <h3 className="text-lg font-bold text-white mb-4">
-                    <span>Pron�stico de Contaminantes</span>
+                    <span>Pronóstico de Contaminantes</span>
                   </h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={forecastData}>
@@ -885,15 +1055,20 @@ export const AirQualityApp = () => {
                     </h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-2">
-                    {globalAirQualityData.map(location => <div key={location.id} className="flex items-center justify-between p-4 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#87CEEB]/30 hover:bg-[#87CEEB]/15 transition-colors" style={{
-                  boxShadow: '0 4px 8px rgba(135, 206, 235, 0.15), inset 0 -2px 4px rgba(0, 0, 0, 0.1)'
-                }}>
+                    {globalAirQualityData.map(location => <div 
+                      key={location.id} 
+                      onClick={() => handleCitySelect(location)}
+                      className="flex items-center justify-between p-4 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#87CEEB]/30 hover:bg-[#87CEEB]/20 transition-all cursor-pointer transform hover:scale-105" 
+                      style={{
+                        boxShadow: '0 4px 8px rgba(135, 206, 235, 0.15), inset 0 -2px 4px rgba(0, 0, 0, 0.1)'
+                      }}>
                         <div className="flex-1">
                           <p className="font-bold text-sm text-white mb-1">
                             <span>{location.name}</span>
                           </p>
                           <p className="text-xs text-[#B0E0E6]">
-                            <span>{location.lat.toFixed(2)}�, {location.lng.toFixed(2)}�</span>
+                            <span>{location.lat.toFixed(2)}°,
+                            {location.lng.toFixed(2)}°</span>
                           </p>
                         </div>
                         <div className="flex items-center gap-3">
@@ -954,10 +1129,10 @@ export const AirQualityApp = () => {
                         <Cloud className="w-5 h-5 text-[#5DADE2] mt-0.5 flex-shrink-0" />
                         <div>
                           <p className="font-bold text-xs text-white">
-                            <span>Datos Meteorol�gicos</span>
+                            <span>Datos Meteorologicos</span>
                           </p>
                           <p className="text-xs text-[#B0E0E6] mt-1">
-                            <span>Informaci�n meteorol�gica</span>
+                            <span>Informacion meteorologica</span>
                           </p>
                         </div>
                       </div>
@@ -1034,7 +1209,7 @@ export const AirQualityApp = () => {
                       <CheckCircle className="w-5 h-5 text-[#98D8C8] mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="font-bold text-sm text-white">
-                          <span>Poblaci�n General</span>
+                          <span>Poblacion General</span>
                         </p>
                         <p className="text-xs text-[#B0E0E6]">
                           <span>Las actividades al aire libre son aceptables. Disfrute de su rutina habitual.</span>
@@ -1060,10 +1235,10 @@ export const AirQualityApp = () => {
                       <Info className="w-5 h-5 text-[#E67E22] mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="font-bold text-sm text-white">
-                          <span>Ni�os y Adultos Mayores</span>
+                          <span>Niños y Adultos Mayores</span>
                         </p>
                         <p className="text-xs text-[#B0E0E6]">
-                          <span>Tome descansos durante las actividades al aire libre si experimenta s�ntomas.</span>
+                          <span>Tome descansos durante las actividades al aire libre si experimenta sintomas.</span>
                         </p>
                       </div>
                     </div>
@@ -1101,7 +1276,7 @@ export const AirQualityApp = () => {
                 {/* Configuraci�n de notificaciones */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
                   <h3 className="text-lg font-bold text-white mb-4">
-                    <span>Configuraci�n de Notificaciones</span>
+                    <span>Configuracion de Notificaciones</span>
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="flex items-center justify-between p-4 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#87CEEB]/30" style={{
@@ -1141,10 +1316,10 @@ export const AirQualityApp = () => {
                 }}>
                       <div className="flex-1 mr-4">
                         <p className="text-sm font-bold text-white">
-                          <span>Actualizaciones de Pron�stico</span>
+                          <span>Actualizaciones de Pronostico</span>
                         </p>
                         <p className="text-xs text-[#B0E0E6] mt-1">
-                          <span>Notificaciones de pron�stico</span>
+                          <span>Notificaciones de pronostico</span>
                         </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
@@ -1158,7 +1333,7 @@ export const AirQualityApp = () => {
             </motion.div>}
         </div>
 
-        {/* Navegaci�n inferior m�vil */}
+        {/* Navegacion inferior movil */}
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#2d5a7b]/70 to-[#4A90A4]/70 backdrop-blur-sm border-t-2 border-[#87CEEB]/30 shadow-2xl z-30">
           <div className="grid grid-cols-4 gap-1 p-2">
             <button onClick={() => setActiveTab('overview')} className={`flex flex-col items-center gap-1 py-2.5 px-3 rounded-lg transition-all ${activeTab === 'overview' ? 'bg-gradient-to-r from-[#87CEEB] to-[#5DADE2] text-white' : 'text-[#B0E0E6] hover:bg-[#87CEEB]/10'}`} style={activeTab === 'overview' ? {
@@ -1174,7 +1349,7 @@ export const AirQualityApp = () => {
           } : {}}>
               <TrendingUp className="w-5 h-5" />
               <span className="text-xs font-bold">
-                <span>Pron�stico</span>
+                <span>Pronóstico</span>
               </span>
             </button>
             <button onClick={() => setActiveTab('map')} className={`flex flex-col items-center gap-1 py-2.5 px-3 rounded-lg transition-all ${activeTab === 'map' ? 'bg-gradient-to-r from-[#87CEEB] to-[#5DADE2] text-white' : 'text-[#B0E0E6] hover:bg-[#87CEEB]/10'}`} style={activeTab === 'map' ? {
