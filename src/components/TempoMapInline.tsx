@@ -54,7 +54,7 @@ const TempoMapInline: React.FC = () => {
   const [temporaryCoords, setTemporaryCoords] = useState<Coordinates | null>(null);
   const [results, setResults] = useState<TempoResult[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>('');
-  const [radius, setRadius] = useState(50);
+  const [radius, setRadius] = useState(10);
   const [heatLayers, setHeatLayers] = useState<any[]>([]);
   const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
@@ -360,9 +360,9 @@ const TempoMapInline: React.FC = () => {
     >
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         {/* Controls Panel */}
-        <div className="w-full lg:w-80 space-y-6">
+        <div className="w-full lg:w-80 space-y-6 relative z-10">
           {/* Location Selection */}
-          <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
+          <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 relative z-20">
             <h3 className="text-white font-semibold text-lg flex items-center gap-2 mb-4">
               <Navigation className="w-5 h-5 text-[#98D8C8]" />
               Ubicación
@@ -391,7 +391,7 @@ const TempoMapInline: React.FC = () => {
               </div>
 
               {/* Search */}
-              <div className="relative">
+              <div className="relative z-50">
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#B0E0E6]" />
                   <input
@@ -400,12 +400,12 @@ const TempoMapInline: React.FC = () => {
                     onChange={(e) => handleSearchInput(e.target.value)}
                     onFocus={() => setShowSuggestions(suggestions.length > 0)}
                     placeholder="Buscar ciudad o lugar..."
-                    className="w-full pl-12 pr-4 py-3 bg-[#87CEEB]/10 backdrop-blur border-2 border-[#87CEEB]/30 rounded-xl text-white placeholder-[#B0E0E6] focus:outline-none focus:border-[#87CEEB] focus:bg-[#87CEEB]/15 transition-all duration-200 shadow-inner"
+                    className="w-full pl-12 pr-4 py-3 bg-[#87CEEB]/10 backdrop-blur border-2 border-[#87CEEB]/30 rounded-xl text-white placeholder-[#B0E0E6] focus:outline-none focus:border-[#87CEEB] focus:bg-[#87CEEB]/15 transition-all duration-200 shadow-inner relative z-10"
                   />
                 </div>
                 
                 {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-gradient-to-b from-[#2d5a7b]/95 to-[#1a3a52]/95 backdrop-blur-md border-2 border-[#87CEEB]/30 rounded-xl shadow-2xl z-10 max-h-48 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-gradient-to-b from-[#2d5a7b]/95 to-[#1a3a52]/95 backdrop-blur-md border-2 border-[#87CEEB]/30 rounded-xl shadow-2xl z-[9999] max-h-48 overflow-y-auto">
                     {suggestions.map((suggestion, index) => (
                       <button
                         key={index}
@@ -422,7 +422,7 @@ const TempoMapInline: React.FC = () => {
           </div>
 
           {/* Parameters */}
-          <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
+          <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 relative z-0">
             <h3 className="text-white font-semibold text-lg flex items-center gap-2 mb-4">
               <Activity className="w-5 h-5 text-[#98D8C8]" />
               Parámetros
@@ -442,7 +442,7 @@ const TempoMapInline: React.FC = () => {
 
           {/* Temporary Pin Actions */}
           {temporaryCoords && (
-            <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
+            <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 relative z-0">
               <div className="text-sm text-white font-medium mb-3">
                 📍 Pin colocado en:<br/>
                 <span className="text-[#98D8C8] font-mono">
@@ -468,7 +468,7 @@ const TempoMapInline: React.FC = () => {
 
           {/* Results */}
           {results.length > 0 && (
-            <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
+            <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 relative z-0">
               <h3 className="text-white font-semibold text-lg flex items-center gap-2 mb-4">
                 <Activity className="w-5 h-5 text-[#98D8C8]" />
                 Resultados
@@ -509,7 +509,7 @@ const TempoMapInline: React.FC = () => {
           )}
 
           {isLoading && (
-            <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
+            <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 relative z-0">
               <div className="flex items-center justify-center py-4">
                 <Loader className="w-6 h-6 text-[#98D8C8] animate-spin" />
                 <span className="ml-3 text-white font-medium">Consultando datos TEMPO...</span>
@@ -519,7 +519,7 @@ const TempoMapInline: React.FC = () => {
         </div>
 
         {/* Map Container */}
-        <div className="flex-1 bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl border border-[#87CEEB]/30 relative overflow-hidden">
+        <div className="flex-1 bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl border border-[#87CEEB]/30 relative overflow-hidden z-0">
           <div className="absolute inset-0 p-4">
             <div
               ref={mapRef}

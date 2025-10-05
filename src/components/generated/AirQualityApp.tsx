@@ -440,7 +440,9 @@ export const AirQualityApp = () => {
     try {
       const raw = localStorage.getItem('notificationSettings');
       if (raw) return JSON.parse(raw);
-    } catch {}
+    } catch (error) {
+      console.error('Error loading notification settings:', error);
+    }
     return {
       airQualityAlerts: true,
       dailySummary: true,
@@ -500,7 +502,9 @@ export const AirQualityApp = () => {
   useEffect(() => {
     try {
       localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
-    } catch {}
+    } catch (error) {
+      console.error('Error saving notification settings:', error);
+    }
   }, [notificationSettings]);
 
   // Sin efectos de notificaciones del navegador
@@ -1078,10 +1082,7 @@ export const AirQualityApp = () => {
               </div>
             </motion.div>}
 
-          {activeTab === 'map' && <TempoMapInline
-            isOpen={true}
-            onClose={() => setActiveTab('overview')}
-          />}
+          {activeTab === 'map' && <TempoMapInline />}
 
           {activeTab === 'alerts' && <motion.div initial={{
           opacity: 0

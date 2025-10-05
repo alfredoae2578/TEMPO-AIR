@@ -405,153 +405,156 @@ const TempoMapInterface: React.FC<TempoMapInterfaceProps> = ({ isOpen, onClose }
 
         <div className="flex-1 flex overflow-hidden">
           {/* Controls Panel */}
-          <div className="w-80 p-6 border-r-2 border-[#87CEEB]/30 space-y-6 overflow-y-auto bg-gradient-to-b from-[#2d5a7b]/40 to-[#1a3a52]/40 backdrop-blur-sm">
-            {/* Location Selection */}
-            <div className="space-y-4">
-              <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-                <Navigation className="w-5 h-5 text-[#98D8C8]" />
-                Ubicación
-              </h3>
-              <div className="flex gap-3">
-                <button
-                  onClick={useCurrentLocation}
-                  disabled={isLoading}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-[#98D8C8] to-[#98D8C8]/80 hover:from-[#98D8C8]/90 hover:to-[#98D8C8]/70 disabled:opacity-50 text-[#1a3a52] rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#98D8C8]/30 border border-[#98D8C8]/20"
-                >
-                  <Navigation className="w-4 h-4" />
-                  Mi Ubicación
-                </button>
-                <button
-                  onClick={activateClickMode}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg border ${
-                    clickModeActive 
-                      ? 'bg-gradient-to-r from-[#FF9800] to-[#E67E22] text-white shadow-[#FF9800]/40 border-[#FF9800]/30' 
-                      : 'bg-gradient-to-r from-[#87CEEB] to-[#5DADE2] hover:from-[#87CEEB]/90 hover:to-[#5DADE2]/90 text-white shadow-[#87CEEB]/30 border-[#87CEEB]/20'
-                  }`}
-                >
-                  <Target className="w-4 h-4" />
-                  Clic en Mapa
-                </button>
-              </div>
-
-              {/* Search */}
-              <div className="relative">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#B0E0E6]" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => handleSearchInput(e.target.value)}
-                    onFocus={() => setShowSuggestions(suggestions.length > 0)}
-                    placeholder="Buscar ciudad o lugar..."
-                    className="w-full pl-12 pr-4 py-3 bg-[#87CEEB]/10 backdrop-blur border-2 border-[#87CEEB]/30 rounded-xl text-white placeholder-[#B0E0E6] focus:outline-none focus:border-[#87CEEB] focus:bg-[#87CEEB]/15 transition-all duration-200 shadow-inner"
-                  />
-                </div>
-                
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-gradient-to-b from-[#2d5a7b]/95 to-[#1a3a52]/95 backdrop-blur-md border-2 border-[#87CEEB]/30 rounded-xl shadow-2xl z-10 max-h-48 overflow-y-auto">
-                    {suggestions.map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => selectLocation(parseFloat(suggestion.lat), parseFloat(suggestion.lon), suggestion.display_name)}
-                        className="w-full text-left px-5 py-4 text-white hover:bg-gradient-to-r hover:from-[#87CEEB]/20 hover:to-[#5DADE2]/20 border-b border-[#87CEEB]/20 last:border-b-0 transition-all duration-200 rounded-xl"
-                      >
-                        <div className="text-sm font-medium">{suggestion.display_name}</div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Parameters */}
-            <div className="space-y-4">
-              <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-                <Activity className="w-5 h-5 text-[#98D8C8]" />
-                Parámetros
-              </h3>
-              <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
-                <label className="block text-sm font-medium text-[#B0E0E6] mb-2">Radio de análisis (km)</label>
-                <input
-                  type="number"
-                  value={radius}
-                  onChange={(e) => setRadius(parseInt(e.target.value))}
-                  min="1"
-                  max="200"
-                  className="w-full px-4 py-3 bg-[#87CEEB]/15 backdrop-blur border-2 border-[#87CEEB]/30 rounded-xl text-white focus:outline-none focus:border-[#87CEEB] focus:bg-[#87CEEB]/20 transition-all duration-200 shadow-inner"
-                />
-              </div>
-            </div>
-
-            {/* Temporary Pin Actions */}
-            {temporaryCoords && (
-              <div className="space-y-3 bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
-                <div className="text-sm text-white font-medium">
-                  📍 Pin colocado en:<br/>
-                  <span className="text-[#98D8C8] font-mono">
-                    {temporaryCoords.lat.toFixed(6)}, {temporaryCoords.lon.toFixed(6)}
-                  </span>
-                </div>
+          <div className="w-80 border-r-2 border-[#87CEEB]/30 bg-gradient-to-b from-[#2d5a7b]/40 to-[#1a3a52]/40 backdrop-blur-sm relative">
+            <div className="p-6 space-y-6 overflow-y-auto h-full">
+              {/* Location Selection */}
+              <div className="space-y-4">
+                <h3 className="text-white font-semibold text-lg flex items-center gap-2">
+                  <Navigation className="w-5 h-5 text-[#98D8C8]" />
+                  Ubicación
+                </h3>
                 <div className="flex gap-3">
                   <button
-                    onClick={confirmTemporaryLocation}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-[#98D8C8] to-[#98D8C8]/80 hover:from-[#98D8C8]/90 hover:to-[#98D8C8]/70 text-[#1a3a52] rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#98D8C8]/30 border border-[#98D8C8]/20"
+                    onClick={useCurrentLocation}
+                    disabled={isLoading}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-[#98D8C8] to-[#98D8C8]/80 hover:from-[#98D8C8]/90 hover:to-[#98D8C8]/70 disabled:opacity-50 text-[#1a3a52] rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#98D8C8]/30 border border-[#98D8C8]/20"
                   >
-                    ✓ Confirmar
+                    <Navigation className="w-4 h-4" />
+                    Mi Ubicación
                   </button>
                   <button
-                    onClick={cancelClickMode}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#E67E22]/90 hover:to-[#D35400]/90 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#E67E22]/30 border border-[#E67E22]/20"
+                    onClick={activateClickMode}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg border ${
+                      clickModeActive 
+                        ? 'bg-gradient-to-r from-[#FF9800] to-[#E67E22] text-white shadow-[#FF9800]/40 border-[#FF9800]/30' 
+                        : 'bg-gradient-to-r from-[#87CEEB] to-[#5DADE2] hover:from-[#87CEEB]/90 hover:to-[#5DADE2]/90 text-white shadow-[#87CEEB]/30 border-[#87CEEB]/20'
+                    }`}
                   >
-                    ✗ Cancelar
+                    <Target className="w-4 h-4" />
+                    Clic en Mapa
                   </button>
                 </div>
-              </div>
-            )}
 
-            {/* Results */}
-            {results.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-white font-medium">Resultados</h3>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {selectedLocation && (
-                    <div className="text-sm text-[#B0E0E6] mb-2">
-                      📍 {selectedLocation}
-                    </div>
-                  )}
-                  <div className="text-sm text-[#B0E0E6]">
-                    📊 Zonas analizadas: {results.filter(r => r.tiene_datos).length} con datos / {results.filter(r => !r.tiene_datos).length} sin datos
+                {/* Search */}
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#B0E0E6]" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => handleSearchInput(e.target.value)}
+                      onFocus={() => setShowSuggestions(suggestions.length > 0)}
+                      placeholder="Buscar ciudad o lugar..."
+                      className="w-full pl-12 pr-4 py-3 bg-[#87CEEB]/10 backdrop-blur border-2 border-[#87CEEB]/30 rounded-xl text-white placeholder-[#B0E0E6] focus:outline-none focus:border-[#87CEEB] focus:bg-[#87CEEB]/15 transition-all duration-200 shadow-inner"
+                    />
                   </div>
-                  {results.filter(r => r.tiene_datos).map((result, index) => (
-                    <div
-                      key={index}
-                      className="p-3 rounded-lg border-l-4"
-                      style={{
-                        borderLeftColor: result.color,
-                        backgroundColor: `${result.color}15`,
-                        border: `1px solid ${result.color}40`
-                      }}
-                    >
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-white font-medium">Zona {index + 1}</span>
-                        <span
-                          className="px-2 py-1 rounded text-white text-sm font-bold"
-                          style={{ backgroundColor: result.color }}
-                        >
-                          {result.aqi_satelital}
-                        </span>
-                      </div>
-                      <div className="text-xs text-[#B0E0E6]">{result.categoria}</div>
-                    </div>
-                  ))}
                 </div>
               </div>
-            )}
 
-            {isLoading && (
-              <div className="flex items-center justify-center py-8">
-                <Loader className="w-6 h-6 text-[#98D8C8] animate-spin" />
-                <span className="ml-2 text-white">Consultando datos TEMPO...</span>
+              {/* Parameters */}
+              <div className="space-y-4">
+                <h3 className="text-white font-semibold text-lg flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-[#98D8C8]" />
+                  Parámetros
+                </h3>
+                <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
+                  <label className="block text-sm font-medium text-[#B0E0E6] mb-2">Radio de análisis (km)</label>
+                  <input
+                    type="number"
+                    value={radius}
+                    onChange={(e) => setRadius(parseInt(e.target.value))}
+                    min="1"
+                    max="200"
+                    className="w-full px-4 py-3 bg-[#87CEEB]/15 backdrop-blur border-2 border-[#87CEEB]/30 rounded-xl text-white focus:outline-none focus:border-[#87CEEB] focus:bg-[#87CEEB]/20 transition-all duration-200 shadow-inner"
+                  />
+                </div>
+              </div>
+
+              {/* Temporary Pin Actions */}
+              {temporaryCoords && (
+                <div className="space-y-3 bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
+                  <div className="text-sm text-white font-medium">
+                    📍 Pin colocado en:<br/>
+                    <span className="text-[#98D8C8] font-mono">
+                      {temporaryCoords.lat.toFixed(6)}, {temporaryCoords.lon.toFixed(6)}
+                    </span>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={confirmTemporaryLocation}
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-[#98D8C8] to-[#98D8C8]/80 hover:from-[#98D8C8]/90 hover:to-[#98D8C8]/70 text-[#1a3a52] rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#98D8C8]/30 border border-[#98D8C8]/20"
+                    >
+                      ✓ Confirmar
+                    </button>
+                    <button
+                      onClick={cancelClickMode}
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#E67E22]/90 hover:to-[#D35400]/90 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#E67E22]/30 border border-[#E67E22]/20"
+                    >
+                      ✗ Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Results */}
+              {results.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-white font-medium">Resultados</h3>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {selectedLocation && (
+                      <div className="text-sm text-[#B0E0E6] mb-2">
+                        📍 {selectedLocation}
+                      </div>
+                    )}
+                    <div className="text-sm text-[#B0E0E6]">
+                      📊 Zonas analizadas: {results.filter(r => r.tiene_datos).length} con datos / {results.filter(r => !r.tiene_datos).length} sin datos
+                    </div>
+                    {results.filter(r => r.tiene_datos).map((result, index) => (
+                      <div
+                        key={index}
+                        className="p-3 rounded-lg border-l-4"
+                        style={{
+                          borderLeftColor: result.color,
+                          backgroundColor: `${result.color}15`,
+                          border: `1px solid ${result.color}40`
+                        }}
+                      >
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-white font-medium">Zona {index + 1}</span>
+                          <span
+                            className="px-2 py-1 rounded text-white text-sm font-bold"
+                            style={{ backgroundColor: result.color }}
+                          >
+                            {result.aqi_satelital}
+                          </span>
+                        </div>
+                        <div className="text-xs text-[#B0E0E6]">{result.categoria}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {isLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <Loader className="w-6 h-6 text-[#98D8C8] animate-spin" />
+                  <span className="ml-2 text-white">Consultando datos TEMPO...</span>
+                </div>
+              )}
+            </div>
+
+            {/* Search Suggestions - Fixed positioned outside scrollable area */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute top-[180px] left-6 right-6 bg-gradient-to-b from-[#2d5a7b]/95 to-[#1a3a52]/95 backdrop-blur-md border-2 border-[#87CEEB]/30 rounded-xl shadow-2xl z-[1000] max-h-48 overflow-y-auto">
+                {suggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    onClick={() => selectLocation(parseFloat(suggestion.lat), parseFloat(suggestion.lon), suggestion.display_name)}
+                    className="w-full text-left px-5 py-4 text-white hover:bg-gradient-to-r hover:from-[#87CEEB]/20 hover:to-[#5DADE2]/20 border-b border-[#87CEEB]/20 last:border-b-0 transition-all duration-200"
+                  >
+                    <div className="text-sm font-medium">{suggestion.display_name}</div>
+                  </button>
+                ))}
               </div>
             )}
           </div>
