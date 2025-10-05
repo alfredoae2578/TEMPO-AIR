@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { MapPin, Search, Navigation, Target, X, Loader, Activity } from 'lucide-react';
+import { MapPin, Search, Navigation, Target, Loader, Activity } from 'lucide-react';
+import { motion } from 'framer-motion';
 import 'leaflet/dist/leaflet.css';
 
 // Types for the TEMPO map interface
@@ -33,11 +34,6 @@ interface LocationSuggestion {
   display_name: string;
 }
 
-interface TempoMapInterfaceProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
 // Map click event type
 interface MapClickEvent {
   latlng: {
@@ -46,9 +42,8 @@ interface MapClickEvent {
   };
 }
 
-const TempoMapInterface: React.FC<TempoMapInterfaceProps> = ({ isOpen, onClose }) => {
+const TempoMapInline: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
-  // Using any for Leaflet objects to avoid type conflicts
   const [map, setMap] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
@@ -94,8 +89,7 @@ const TempoMapInterface: React.FC<TempoMapInterfaceProps> = ({ isOpen, onClose }
 
   // Initialize Leaflet map
   useEffect(() => {
-    if (isOpen && mapRef.current && !map) {
-      // Dynamically import Leaflet to avoid SSR issues
+    if (mapRef.current && !map) {
       import('leaflet').then((L) => {
         const newMap = L.map(mapRef.current!).setView([20, 0], 2);
 
@@ -110,17 +104,17 @@ const TempoMapInterface: React.FC<TempoMapInterfaceProps> = ({ isOpen, onClose }
     }
 
     return () => {
-      if (map && !isOpen) {
+      if (map) {
         map.remove();
         setMap(null);
       }
     };
-  }, [isOpen]); // Remove map and handleMapClick from dependencies
+  }, []);
 
-  // Separate useEffect for handling map click events
+  // Handle map click events
   useEffect(() => {
     if (map) {
-      map.off('click'); // Remove previous listeners
+      map.off('click');
       map.on('click', handleMapClick);
     }
   }, [map, handleMapClick]);
@@ -273,8 +267,8 @@ const TempoMapInterface: React.FC<TempoMapInterfaceProps> = ({ isOpen, onClose }
         body: JSON.stringify({ 
           lat, 
           lon, 
-          num_coordenadas: 9,
-          radio: radius * 1000
+          num_coordenadas: 9, 
+          radio: radius * 1000 
         })
       });
 
@@ -358,60 +352,22 @@ const TempoMapInterface: React.FC<TempoMapInterfaceProps> = ({ isOpen, onClose }
     }
   };
 
-  // Cleanup map when component unmounts or modal closes
-  useEffect(() => {
-    return () => {
-      if (map) {
-        map.remove();
-        setMap(null);
-      }
-    };
-  }, []);
-
-  // Handle modal close cleanup
-  useEffect(() => {
-    if (!isOpen && map) {
-      map.remove();
-      setMap(null);
-      setClickModeActive(false);
-      setTemporaryCoords(null);
-      if (temporaryPin) {
-        setTemporaryPin(null);
-      }
-    }
-  }, [isOpen, map, temporaryPin]);
-
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gradient-to-br from-[#2d5a7b]/90 to-[#1a3a52]/90 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-[#87CEEB]/30 w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b-2 border-[#87CEEB]/30 bg-gradient-to-r from-[#2d5a7b]/30 to-[#1a3a52]/30">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            <div className="relative">
-              <MapPin className="w-7 h-7 text-[#98D8C8]" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />
-            </div>
-            Mapa Interactivo TEMPO
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-3 rounded-xl bg-gradient-to-r from-[#87CEEB]/20 to-[#5DADE2]/20 hover:from-[#87CEEB]/30 hover:to-[#5DADE2]/30 transition-all duration-200 shadow-lg border border-[#87CEEB]/20"
-          >
-            <X className="w-6 h-6 text-white" />
-          </button>
-        </div>
-
-        <div className="flex-1 flex overflow-hidden">
-          {/* Controls Panel */}
-          <div className="w-80 p-6 border-r-2 border-[#87CEEB]/30 space-y-6 overflow-y-auto bg-gradient-to-b from-[#2d5a7b]/40 to-[#1a3a52]/40 backdrop-blur-sm">
-            {/* Location Selection */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-4 lg:p-6 h-full flex flex-col"
+    >
+      <div className="flex flex-col lg:flex-row gap-6 h-full">
+        {/* Controls Panel */}
+        <div className="w-full lg:w-80 space-y-6">
+          {/* Location Selection */}
+          <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
+            <h3 className="text-white font-semibold text-lg flex items-center gap-2 mb-4">
+              <Navigation className="w-5 h-5 text-[#98D8C8]" />
+              Ubicación
+            </h3>
             <div className="space-y-4">
-              <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-                <Navigation className="w-5 h-5 text-[#98D8C8]" />
-                Ubicación
-              </h3>
               <div className="flex gap-3">
                 <button
                   onClick={useCurrentLocation}
@@ -454,7 +410,7 @@ const TempoMapInterface: React.FC<TempoMapInterfaceProps> = ({ isOpen, onClose }
                       <button
                         key={index}
                         onClick={() => selectLocation(parseFloat(suggestion.lat), parseFloat(suggestion.lon), suggestion.display_name)}
-                        className="w-full text-left px-5 py-4 text-white hover:bg-gradient-to-r hover:from-[#87CEEB]/20 hover:to-[#5DADE2]/20 border-b border-[#87CEEB]/20 last:border-b-0 transition-all duration-200 rounded-xl"
+                        className="w-full text-left px-5 py-4 text-white hover:bg-gradient-to-r hover:from-[#87CEEB]/20 hover:to-[#5DADE2]/20 border-b border-[#87CEEB]/20 last:border-b-0 transition-all duration-200"
                       >
                         <div className="text-sm font-medium">{suggestion.display_name}</div>
                       </button>
@@ -463,116 +419,123 @@ const TempoMapInterface: React.FC<TempoMapInterfaceProps> = ({ isOpen, onClose }
                 )}
               </div>
             </div>
-
-            {/* Parameters */}
-            <div className="space-y-4">
-              <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-                <Activity className="w-5 h-5 text-[#98D8C8]" />
-                Parámetros
-              </h3>
-              <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
-                <label className="block text-sm font-medium text-[#B0E0E6] mb-2">Radio de análisis (km)</label>
-                <input
-                  type="number"
-                  value={radius}
-                  onChange={(e) => setRadius(parseInt(e.target.value))}
-                  min="1"
-                  max="200"
-                  className="w-full px-4 py-3 bg-[#87CEEB]/15 backdrop-blur border-2 border-[#87CEEB]/30 rounded-xl text-white focus:outline-none focus:border-[#87CEEB] focus:bg-[#87CEEB]/20 transition-all duration-200 shadow-inner"
-                />
-              </div>
-            </div>
-
-            {/* Temporary Pin Actions */}
-            {temporaryCoords && (
-              <div className="space-y-3 bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
-                <div className="text-sm text-white font-medium">
-                  📍 Pin colocado en:<br/>
-                  <span className="text-[#98D8C8] font-mono">
-                    {temporaryCoords.lat.toFixed(6)}, {temporaryCoords.lon.toFixed(6)}
-                  </span>
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={confirmTemporaryLocation}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-[#98D8C8] to-[#98D8C8]/80 hover:from-[#98D8C8]/90 hover:to-[#98D8C8]/70 text-[#1a3a52] rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#98D8C8]/30 border border-[#98D8C8]/20"
-                  >
-                    ✓ Confirmar
-                  </button>
-                  <button
-                    onClick={cancelClickMode}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#E67E22]/90 hover:to-[#D35400]/90 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#E67E22]/30 border border-[#E67E22]/20"
-                  >
-                    ✗ Cancelar
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Results */}
-            {results.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-white font-medium">Resultados</h3>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {selectedLocation && (
-                    <div className="text-sm text-[#B0E0E6] mb-2">
-                      📍 {selectedLocation}
-                    </div>
-                  )}
-                  <div className="text-sm text-[#B0E0E6]">
-                    📊 Zonas analizadas: {results.filter(r => r.tiene_datos).length} con datos / {results.filter(r => !r.tiene_datos).length} sin datos
-                  </div>
-                  {results.filter(r => r.tiene_datos).map((result, index) => (
-                    <div
-                      key={index}
-                      className="p-3 rounded-lg border-l-4"
-                      style={{
-                        borderLeftColor: result.color,
-                        backgroundColor: `${result.color}15`,
-                        border: `1px solid ${result.color}40`
-                      }}
-                    >
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-white font-medium">Zona {index + 1}</span>
-                        <span
-                          className="px-2 py-1 rounded text-white text-sm font-bold"
-                          style={{ backgroundColor: result.color }}
-                        >
-                          {result.aqi_satelital}
-                        </span>
-                      </div>
-                      <div className="text-xs text-[#B0E0E6]">{result.categoria}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {isLoading && (
-              <div className="flex items-center justify-center py-8">
-                <Loader className="w-6 h-6 text-[#98D8C8] animate-spin" />
-                <span className="ml-2 text-white">Consultando datos TEMPO...</span>
-              </div>
-            )}
           </div>
 
-          {/* Map Container */}
-          <div className="flex-1 relative bg-gradient-to-br from-[#1a3a52]/20 to-[#2d5a7b]/20">
+          {/* Parameters */}
+          <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
+            <h3 className="text-white font-semibold text-lg flex items-center gap-2 mb-4">
+              <Activity className="w-5 h-5 text-[#98D8C8]" />
+              Parámetros
+            </h3>
+            <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
+              <label className="block text-sm font-medium text-[#B0E0E6] mb-2">Radio de análisis (km)</label>
+              <input
+                type="number"
+                value={radius}
+                onChange={(e) => setRadius(parseInt(e.target.value))}
+                min="1"
+                max="200"
+                className="w-full px-4 py-3 bg-[#87CEEB]/15 backdrop-blur border-2 border-[#87CEEB]/30 rounded-xl text-white focus:outline-none focus:border-[#87CEEB] focus:bg-[#87CEEB]/20 transition-all duration-200 shadow-inner"
+              />
+            </div>
+          </div>
+
+          {/* Temporary Pin Actions */}
+          {temporaryCoords && (
+            <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
+              <div className="text-sm text-white font-medium mb-3">
+                📍 Pin colocado en:<br/>
+                <span className="text-[#98D8C8] font-mono">
+                  {temporaryCoords.lat.toFixed(6)}, {temporaryCoords.lon.toFixed(6)}
+                </span>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={confirmTemporaryLocation}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-[#98D8C8] to-[#98D8C8]/80 hover:from-[#98D8C8]/90 hover:to-[#98D8C8]/70 text-[#1a3a52] rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#98D8C8]/30 border border-[#98D8C8]/20"
+                >
+                  ✓ Confirmar
+                </button>
+                <button
+                  onClick={cancelClickMode}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#E67E22]/90 hover:to-[#D35400]/90 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#E67E22]/30 border border-[#E67E22]/20"
+                >
+                  ✗ Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Results */}
+          {results.length > 0 && (
+            <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
+              <h3 className="text-white font-semibold text-lg flex items-center gap-2 mb-4">
+                <Activity className="w-5 h-5 text-[#98D8C8]" />
+                Resultados
+              </h3>
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {selectedLocation && (
+                  <div className="text-sm text-[#98D8C8] font-medium bg-[#87CEEB]/10 backdrop-blur rounded-lg p-3 border border-[#87CEEB]/30">
+                    📍 {selectedLocation}
+                  </div>
+                )}
+                <div className="text-sm text-[#B0E0E6] bg-[#87CEEB]/10 backdrop-blur rounded-lg p-3 border border-[#87CEEB]/30">
+                  📊 Zonas analizadas: <span className="text-[#98D8C8] font-semibold">{results.filter(r => r.tiene_datos).length} con datos</span> / <span className="text-[#E67E22] font-semibold">{results.filter(r => !r.tiene_datos).length} sin datos</span>
+                </div>
+                {results.filter(r => r.tiene_datos).map((result, index) => (
+                  <div
+                    key={index}
+                    className="p-4 rounded-xl border-l-4 backdrop-blur shadow-lg transition-all duration-200 hover:shadow-xl"
+                    style={{
+                      borderLeftColor: result.color,
+                      backgroundColor: `${result.color}20`,
+                      border: `1px solid ${result.color}60`
+                    }}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-white font-semibold">Zona {index + 1}</span>
+                      <span
+                        className="px-3 py-1 rounded-lg text-white text-sm font-bold shadow-lg"
+                        style={{ backgroundColor: result.color }}
+                      >
+                        AQI: {result.aqi_satelital}
+                      </span>
+                    </div>
+                    <div className="text-sm text-[#B0E0E6] font-medium">{result.categoria}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {isLoading && (
+            <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
+              <div className="flex items-center justify-center py-4">
+                <Loader className="w-6 h-6 text-[#98D8C8] animate-spin" />
+                <span className="ml-3 text-white font-medium">Consultando datos TEMPO...</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Map Container */}
+        <div className="flex-1 bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl border border-[#87CEEB]/30 relative overflow-hidden">
+          <div className="absolute inset-0 p-4">
             <div
               ref={mapRef}
-              className="w-full h-full rounded-lg"
+              className="w-full h-full rounded-xl overflow-hidden"
               style={{ minHeight: '400px' }}
             />
             {clickModeActive && (
-              <div className="absolute top-6 left-6 right-6 bg-gradient-to-r from-[#FF9800]/95 to-[#E67E22]/95 backdrop-blur text-white px-6 py-4 rounded-xl text-center font-semibold shadow-2xl border border-[#FF9800]/30 animate-pulse">
+              <div className="absolute top-8 left-8 right-8 bg-gradient-to-r from-[#FF9800]/95 to-[#E67E22]/95 backdrop-blur text-white px-6 py-4 rounded-xl text-center font-semibold shadow-2xl border border-[#FF9800]/30 animate-pulse">
                 🗺️ Haz clic en el mapa para seleccionar ubicación...
               </div>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-export default TempoMapInterface;
+export default TempoMapInline;

@@ -3,6 +3,7 @@ import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Cartesia
 import { AlertCircle, Wind, Droplets, Sun, Cloud, Activity, MapPin, Bell, TrendingUp, TrendingDown, Calendar, Info, AlertTriangle, CheckCircle, Navigation, Satellite, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import EarthBackground from '../earth3d/EarthBackground';
+import TempoMapInline from '../TempoMapInline';
 
 type AirQualityLevel = 'good' | 'moderate' | 'unhealthy-sensitive' | 'unhealthy' | 'very-unhealthy' | 'hazardous';
 type PollutantData = {
@@ -433,6 +434,7 @@ export const AirQualityApp = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'forecast' | 'map' | 'alerts'>('overview');
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMapInterfaceOpen, setIsMapInterfaceOpen] = useState(false);
   const [alerts, setAlerts] = useState<AlertData[]>([]);
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(() => {
     try {
@@ -1076,156 +1078,10 @@ export const AirQualityApp = () => {
               </div>
             </motion.div>}
 
-          {activeTab === 'map' && <motion.div initial={{
-          opacity: 0
-        }} animate={{
-          opacity: 1
-        }} className="p-4 lg:p-6 space-y-4 lg:space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-                {/* Ubicaciones globales */}
-                <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                      <MapPin className="w-5 h-5 text-[#98D8C8]" />
-                      <span>Monitoreo Global de Calidad del Aire</span>
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-2">
-                    {globalAirQualityData.map(location => <div 
-                      key={location.id} 
-                      onClick={() => handleCitySelect(location)}
-                      className="flex items-center justify-between p-4 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#87CEEB]/30 hover:bg-[#87CEEB]/20 transition-all cursor-pointer transform hover:scale-105" 
-                      style={{
-                        boxShadow: '0 4px 8px rgba(135, 206, 235, 0.15), inset 0 -2px 4px rgba(0, 0, 0, 0.1)'
-                      }}>
-                        <div className="flex-1">
-                          <p className="font-bold text-sm text-white mb-1">
-                            <span>{location.name}</span>
-                          </p>
-                          <p className="text-xs text-[#B0E0E6]">
-                            <span>{location.lat.toFixed(2)}°,
-                            {location.lng.toFixed(2)}°</span>
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full flex items-center justify-center border-2 shadow-lg" style={{
-                      borderColor: getAQIColor(location.level),
-                      backgroundColor: `${getAQIColor(location.level)}20`,
-                      boxShadow: `0 4px 8px ${getAQIColor(location.level)}40, inset 0 -2px 4px rgba(0, 0, 0, 0.15)`
-                    }}>
-                            <span className="text-sm font-bold" style={{
-                        color: getAQIColor(location.level)
-                      }}>
-                              {location.aqi}
-                            </span>
-                          </div>
-                        </div>
-                      </div>)}
-                  </div>
-                </div>
-
-                {/* Informaci�n lateral */}
-                <div className="space-y-4">
-                  {/* Fuentes de datos */}
-                  <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                      <Satellite className="w-5 h-5 text-[#98D8C8]" />
-                      <span>Fuentes de Datos</span>
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3 p-3 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#98D8C8]/30" style={{
-                    boxShadow: '0 4px 8px rgba(152, 216, 200, 0.15), inset 0 -2px 4px rgba(0, 0, 0, 0.1)'
-                  }}>
-                        <Activity className="w-5 h-5 text-[#98D8C8] mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-bold text-xs text-white">
-                            <span>NASA TEMPO</span>
-                          </p>
-                          <p className="text-xs text-[#B0E0E6] mt-1">
-                            <span>Mediciones satelitales</span>
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-3 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#87CEEB]/30" style={{
-                    boxShadow: '0 4px 8px rgba(135, 206, 235, 0.15), inset 0 -2px 4px rgba(0, 0, 0, 0.1)'
-                  }}>
-                        <MapPin className="w-5 h-5 text-[#98D8C8] mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-bold text-xs text-white">
-                            <span>Red OpenAQ</span>
-                          </p>
-                          <p className="text-xs text-[#B0E0E6] mt-1">
-                            <span>Estaciones terrestres</span>
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-3 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#87CEEB]/30" style={{
-                    boxShadow: '0 4px 8px rgba(135, 206, 235, 0.15), inset 0 -2px 4px rgba(0, 0, 0, 0.1)'
-                  }}>
-                        <Cloud className="w-5 h-5 text-[#5DADE2] mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-bold text-xs text-white">
-                            <span>Datos Meteorologicos</span>
-                          </p>
-                          <p className="text-xs text-[#B0E0E6] mt-1">
-                            <span>Informacion meteorologica</span>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Escala de ICA */}
-                  <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30">
-                    <h3 className="text-lg font-bold text-white mb-4">
-                      <span>Escala de ICA</span>
-                    </h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-10 h-6 rounded" style={{
-                      backgroundColor: getAQIColor('good')
-                    }} />
-                        <div className="flex-1">
-                          <p className="text-xs font-bold text-white">
-                            <span>Bueno (0-50)</span>
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-10 h-6 rounded" style={{
-                      backgroundColor: getAQIColor('moderate')
-                    }} />
-                        <div className="flex-1">
-                          <p className="text-xs font-bold text-white">
-                            <span>Moderado (51-100)</span>
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-10 h-6 rounded" style={{
-                      backgroundColor: getAQIColor('unhealthy-sensitive')
-                    }} />
-                        <div className="flex-1">
-                          <p className="text-xs font-bold text-white">
-                            <span>Poco saludable sensible (101-150)</span>
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-10 h-6 rounded" style={{
-                      backgroundColor: getAQIColor('unhealthy')
-                    }} />
-                        <div className="flex-1">
-                          <p className="text-xs font-bold text-white">
-                            <span>Poco saludable (151-200)</span>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>}
+          {activeTab === 'map' && <TempoMapInline
+            isOpen={true}
+            onClose={() => setActiveTab('overview')}
+          />}
 
           {activeTab === 'alerts' && <motion.div initial={{
           opacity: 0
