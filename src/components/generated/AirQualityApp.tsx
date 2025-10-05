@@ -1082,7 +1082,17 @@ export const AirQualityApp = () => {
               </div>
             </motion.div>}
 
-          {activeTab === 'map' && <TempoMapInline />}
+          {activeTab === 'map' && <TempoMapInline
+            isOpen={true}
+            onClose={() => setActiveTab('overview')}
+            onLocationChange={(location) => {
+              setCurrentLocation({
+                lat: location.lat,
+                lng: location.lng,
+                name: location.name
+              });
+            }}
+          />}
 
           {activeTab === 'alerts' && <motion.div initial={{
           opacity: 0
