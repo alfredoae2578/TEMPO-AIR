@@ -17,6 +17,8 @@ type WeatherData = {
   windSpeed: number;
   windDirection: string;
   pressure: number;
+  aerosolIndex: number;
+  uvIndex: number;
 };
 type ForecastData = {
   time: string;
@@ -224,6 +226,14 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'unhealthy-sensitive'
 }];
 
+// Función para formatear la hora en formato de 12 horas con AM/PM
+const formatTime = (hour: number): string => {
+  if (hour === 0) return '12 AM';
+  if (hour === 12) return '12 PM';
+  if (hour < 12) return `${hour} AM`;
+  return `${hour - 12} PM`;
+};
+
 // Función para generar datos dinámicos basados en la ciudad
 const generateCityData = (aqi: number) => {
   const level = calculateAQILevel(aqi);
@@ -260,19 +270,34 @@ const generateCityData = (aqi: number) => {
     humidity: Math.round(50 + Math.random() * 30),
     windSpeed: Math.round((10 + Math.random() * 15) * 10) / 10,
     windDirection: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.floor(Math.random() * 8)],
-    pressure: 1013
+    pressure: 1013,
+    // Aerosol Index correlacionado con AQI (más contaminación = más aerosoles)
+    aerosolIndex: Math.round((aqi / 50) * 10) / 10, // Rango típico 0-5
+    // UV Index simulado (rango 0-11+)
+    uvIndex: Math.round(2 + Math.random() * 8) // Rango 2-10
   };
 
-  const forecastData: ForecastData[] = [
-    { time: '12 PM', aqi: aqi, no2: pollutants[1].value, pm25: pollutants[0].value, o3: pollutants[2].value },
-    { time: '3 PM', aqi: Math.round(aqi * 1.08), no2: Math.round(pollutants[1].value * 1.05), pm25: Math.round(pollutants[0].value * 1.08), o3: Math.round(pollutants[2].value * 1.07) },
-    { time: '6 PM', aqi: Math.round(aqi * 1.04), no2: Math.round(pollutants[1].value * 1.01), pm25: Math.round(pollutants[0].value * 1.03), o3: Math.round(pollutants[2].value * 1.04) },
-    { time: '9 PM', aqi: Math.round(aqi * 0.88), no2: Math.round(pollutants[1].value * 0.89), pm25: Math.round(pollutants[0].value * 0.85), o3: Math.round(pollutants[2].value * 0.92) },
-    { time: '12 AM', aqi: Math.round(aqi * 0.80), no2: Math.round(pollutants[1].value * 0.82), pm25: Math.round(pollutants[0].value * 0.80), o3: Math.round(pollutants[2].value * 0.84) },
-    { time: '3 AM', aqi: Math.round(aqi * 0.73), no2: Math.round(pollutants[1].value * 0.75), pm25: Math.round(pollutants[0].value * 0.71), o3: Math.round(pollutants[2].value * 0.77) },
-    { time: '6 AM', aqi: Math.round(aqi * 0.82), no2: Math.round(pollutants[1].value * 0.84), pm25: Math.round(pollutants[0].value * 0.82), o3: Math.round(pollutants[2].value * 0.89) },
-    { time: '9 AM', aqi: Math.round(aqi * 0.94), no2: Math.round(pollutants[1].value * 0.93), pm25: Math.round(pollutants[0].value * 0.94), o3: Math.round(pollutants[2].value * 0.98) }
-  ];
+  // Obtener la hora actual del sistema y generar pronóstico desde la próxima hora
+  const now = new Date();
+  const currentHour = now.getHours();
+  const startHour = (currentHour + 1) % 24; // Comenzar desde la próxima hora
+  
+  // Generar 8 puntos de tiempo (cada 3 horas para completar 24 horas)
+  const forecastData: ForecastData[] = [];
+  const aqiMultipliers = [1.0, 1.08, 1.04, 0.88, 0.80, 0.73, 0.82, 0.94];
+  
+  for (let i = 0; i < 8; i++) {
+    const forecastHour = (startHour + (i * 3)) % 24;
+    const multiplier = aqiMultipliers[i];
+    
+    forecastData.push({
+      time: formatTime(forecastHour),
+      aqi: Math.round(aqi * multiplier),
+      no2: Math.round(pollutants[1].value * (multiplier * 0.98)),
+      pm25: Math.round(pollutants[0].value * multiplier),
+      o3: Math.round(pollutants[2].value * (multiplier * 1.02))
+    });
+  }
 
   const historicalData: HistoricalData[] = [
     { date: 'Lun', aqi: Math.round(aqi * 0.76) },
@@ -700,6 +725,38 @@ export const AirQualityApp = () => {
                       <p className="text-2xl font-bold text-white">{weather.windSpeed}</p>
                       <p className="text-xs text-[#B0E0E6] mt-1">
                         <span>km/h {weather.windDirection}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Índices Atmosféricos */}
+                <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <Satellite className="w-5 h-5 text-[#98D8C8]" />
+                    <span>Índices Atmosféricos</span>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Activity className="w-5 h-5 text-[#E67E22]" />
+                        <h4 className="font-bold text-white">Aerosol Index</h4>
+                        <span className="ml-auto text-2xl font-bold text-[#E67E22]">{weather.aerosolIndex}</span>
+                      </div>
+                      <p className="text-xs text-[#B0E0E6] leading-relaxed">
+                        Medición de aerosoles atmosféricos correlacionada con la calidad del aire. 
+                        Valores más altos indican mayor presencia de partículas en suspensión.
+                      </p>
+                    </div>
+                    <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Sun className="w-5 h-5 text-[#F39C12]" />
+                        <h4 className="font-bold text-white">UV Index</h4>
+                        <span className="ml-auto text-2xl font-bold text-[#F39C12]">{weather.uvIndex}</span>
+                      </div>
+                      <p className="text-xs text-[#B0E0E6] leading-relaxed">
+                        Índice de radiación ultravioleta. Valores 0-2: Bajo, 3-5: Moderado, 6-7: Alto, 
+                        8-10: Muy Alto, 11+: Extremo. Use protección solar cuando sea necesario.
                       </p>
                     </div>
                   </div>
