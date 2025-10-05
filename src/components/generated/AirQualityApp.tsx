@@ -3,7 +3,6 @@ import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Cartesia
 import { AlertCircle, Wind, Droplets, Sun, Cloud, Activity, MapPin, Bell, TrendingUp, TrendingDown, Calendar, Info, AlertTriangle, CheckCircle, Navigation, Satellite, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import EarthBackground from '../earth3d/EarthBackground';
-import TempoMapInterface from '../TempoMapInterface';
 
 type AirQualityLevel = 'good' | 'moderate' | 'unhealthy-sensitive' | 'unhealthy' | 'very-unhealthy' | 'hazardous';
 type PollutantData = {
@@ -237,7 +236,6 @@ export const AirQualityApp = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'forecast' | 'map' | 'alerts'>('overview');
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isMapInterfaceOpen, setIsMapInterfaceOpen] = useState(false);
   const pollutants: PollutantData[] = [{
     name: 'PM2.5',
     value: 35.2,
@@ -520,7 +518,7 @@ export const AirQualityApp = () => {
             } : {}}>
                   <Bell className="w-5 h-5" />
                   <span>Alertas</span>
-                  {alerts.length > 0 && <span className="ml-auto bg-[#98D8C8] text-[#1a3a52] text-xs px-2 py-1 rounded-full font-bold">
+                  {alerts.length > 0 && <span className="ml-auto bg-[#98D8C8] text-[#1a3a52] text-xs px-2 py-1 rounded-full font-bold shadow-md">
                       {alerts.length}
                     </span>}
                 </button>
@@ -885,16 +883,6 @@ export const AirQualityApp = () => {
                       <MapPin className="w-5 h-5 text-[#98D8C8]" />
                       <span>Monitoreo Global de Calidad del Aire</span>
                     </h3>
-                    <button
-                      onClick={() => setIsMapInterfaceOpen(true)}
-                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#98D8C8] to-[#87CEEB] hover:from-[#87CEEB] hover:to-[#5DADE2] text-[#1a3a52] hover:text-white rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
-                      style={{
-                        boxShadow: '0 4px 12px rgba(152, 216, 200, 0.3), inset 0 -2px 6px rgba(0, 0, 0, 0.1)'
-                      }}
-                    >
-                      <Satellite className="w-4 h-4" />
-                      <span>Mapa Interactivo TEMPO</span>
-                    </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-2">
                     {globalAirQualityData.map(location => <div key={location.id} className="flex items-center justify-between p-4 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#87CEEB]/30 hover:bg-[#87CEEB]/15 transition-colors" style={{
@@ -1209,11 +1197,5 @@ export const AirQualityApp = () => {
         </nav>
       </div>
     </div> {/* Cierre del div del contenido principal */}
-
-    {/* TEMPO Map Interface Modal */}
-    <TempoMapInterface
-      isOpen={isMapInterfaceOpen}
-      onClose={() => setIsMapInterfaceOpen(false)}
-    />
   </div>; {/* Cierre del div contenedor principal */}
 };
