@@ -224,120 +224,88 @@ const globalAirQualityData: AirQualityLocation[] = [{
   level: 'unhealthy-sensitive'
 }];
 
+// Función para generar datos dinámicos basados en la ciudad
+const generateCityData = (aqi: number) => {
+  const level = calculateAQILevel(aqi);
+  const baseMultiplier = aqi / 85; // 85 es el AQI de Nueva York (base)
+  
+  const pollutants: PollutantData[] = [{
+    name: 'PM2.5',
+    value: Math.round(35.2 * baseMultiplier * 10) / 10,
+    unit: 'μg/m³',
+    level: level,
+    trend: Math.random() > 0.5 ? 'down' : 'up'
+  }, {
+    name: 'NO2',
+    value: Math.round(42.8 * baseMultiplier * 10) / 10,
+    unit: 'ppb',
+    level: calculateAQILevel(Math.min(aqi + 10, 200)),
+    trend: Math.random() > 0.3 ? 'stable' : 'up'
+  }, {
+    name: 'O3',
+    value: Math.round(65.4 * baseMultiplier * 10) / 10,
+    unit: 'ppb',
+    level: level,
+    trend: Math.random() > 0.5 ? 'up' : 'down'
+  }, {
+    name: 'PM10',
+    value: Math.round(58.1 * baseMultiplier * 10) / 10,
+    unit: 'μg/m³',
+    level: level,
+    trend: 'down'
+  }];
+
+  const weather: WeatherData = {
+    temp: Math.round(15 + Math.random() * 20),
+    humidity: Math.round(50 + Math.random() * 30),
+    windSpeed: Math.round((10 + Math.random() * 15) * 10) / 10,
+    windDirection: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.floor(Math.random() * 8)],
+    pressure: 1013
+  };
+
+  const forecastData: ForecastData[] = [
+    { time: '12 PM', aqi: aqi, no2: pollutants[1].value, pm25: pollutants[0].value, o3: pollutants[2].value },
+    { time: '3 PM', aqi: Math.round(aqi * 1.08), no2: Math.round(pollutants[1].value * 1.05), pm25: Math.round(pollutants[0].value * 1.08), o3: Math.round(pollutants[2].value * 1.07) },
+    { time: '6 PM', aqi: Math.round(aqi * 1.04), no2: Math.round(pollutants[1].value * 1.01), pm25: Math.round(pollutants[0].value * 1.03), o3: Math.round(pollutants[2].value * 1.04) },
+    { time: '9 PM', aqi: Math.round(aqi * 0.88), no2: Math.round(pollutants[1].value * 0.89), pm25: Math.round(pollutants[0].value * 0.85), o3: Math.round(pollutants[2].value * 0.92) },
+    { time: '12 AM', aqi: Math.round(aqi * 0.80), no2: Math.round(pollutants[1].value * 0.82), pm25: Math.round(pollutants[0].value * 0.80), o3: Math.round(pollutants[2].value * 0.84) },
+    { time: '3 AM', aqi: Math.round(aqi * 0.73), no2: Math.round(pollutants[1].value * 0.75), pm25: Math.round(pollutants[0].value * 0.71), o3: Math.round(pollutants[2].value * 0.77) },
+    { time: '6 AM', aqi: Math.round(aqi * 0.82), no2: Math.round(pollutants[1].value * 0.84), pm25: Math.round(pollutants[0].value * 0.82), o3: Math.round(pollutants[2].value * 0.89) },
+    { time: '9 AM', aqi: Math.round(aqi * 0.94), no2: Math.round(pollutants[1].value * 0.93), pm25: Math.round(pollutants[0].value * 0.94), o3: Math.round(pollutants[2].value * 0.98) }
+  ];
+
+  const historicalData: HistoricalData[] = [
+    { date: 'Lun', aqi: Math.round(aqi * 0.76) },
+    { date: 'Mar', aqi: Math.round(aqi * 0.92) },
+    { date: 'Mié', aqi: Math.round(aqi * 0.96) },
+    { date: 'Jue', aqi: Math.round(aqi * 0.88) },
+    { date: 'Vie', aqi: Math.round(aqi * 1.04) },
+    { date: 'Sáb', aqi: Math.round(aqi * 1.00) },
+    { date: 'Dom', aqi: aqi }
+  ];
+
+  return { pollutants, weather, forecastData, historicalData };
+};
+
 // @component: AirQualityApp
 export const AirQualityApp = () => {
   const [currentLocation, setCurrentLocation] = useState({
     lat: 40.7128,
     lng: -74.0060,
-    name: 'Nueva York, NY'
+    name: 'Nueva York'
   });
   const [currentAQI, setCurrentAQI] = useState(85);
   const [activeTab, setActiveTab] = useState<'overview' | 'forecast' | 'map' | 'alerts'>('overview');
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const pollutants: PollutantData[] = [{
-    name: 'PM2.5',
-    value: 35.2,
-    unit: 'μg/m³',
-    level: 'moderate',
-    trend: 'down'
-  }, {
-    name: 'NO2',
-    value: 42.8,
-    unit: 'ppb',
-    level: 'good',
-    trend: 'stable'
-  }, {
-    name: 'O3',
-    value: 65.4,
-    unit: 'ppb',
-    level: 'moderate',
-    trend: 'up'
-  }, {
-    name: 'PM10',
-    value: 58.1,
-    unit: 'μg/m³',
-    level: 'moderate',
-    trend: 'down'
-  }];
-  const weather: WeatherData = {
-    temp: 22,
-    humidity: 65,
-    windSpeed: 13.7,
-    windDirection: 'NE',
-    pressure: 1013
-  };
-  const forecastData: ForecastData[] = [{
-    time: '12 PM',
-    aqi: 85,
-    no2: 42,
-    pm25: 35,
-    o3: 65
-  }, {
-    time: '3 PM',
-    aqi: 92,
-    no2: 45,
-    pm25: 38,
-    o3: 70
-  }, {
-    time: '6 PM',
-    aqi: 88,
-    no2: 43,
-    pm25: 36,
-    o3: 68
-  }, {
-    time: '9 PM',
-    aqi: 75,
-    no2: 38,
-    pm25: 30,
-    o3: 60
-  }, {
-    time: '12 AM',
-    aqi: 68,
-    no2: 35,
-    pm25: 28,
-    o3: 55
-  }, {
-    time: '3 AM',
-    aqi: 62,
-    no2: 32,
-    pm25: 25,
-    o3: 50
-  }, {
-    time: '6 AM',
-    aqi: 70,
-    no2: 36,
-    pm25: 29,
-    o3: 58
-  }, {
-    time: '9 AM',
-    aqi: 80,
-    no2: 40,
-    pm25: 33,
-    o3: 64
-  }];
-  const historicalData: HistoricalData[] = [{
-    date: 'Lun',
-    aqi: 65
-  }, {
-    date: 'Mar',
-    aqi: 78
-  }, {
-    date: 'Mié',
-    aqi: 82
-  }, {
-    date: 'Jue',
-    aqi: 75
-  }, {
-    date: 'Vie',
-    aqi: 88
-  }, {
-    date: 'Sáb',
-    aqi: 85
-  }, {
-    date: 'Dom',
-    aqi: 85
-  }];
+  
+  // Generar datos dinámicos basados en el AQI actual
+  const cityData = generateCityData(currentAQI);
+  const pollutants = cityData.pollutants;
+  const weather = cityData.weather;
+  const forecastData = cityData.forecastData;
+  const historicalData = cityData.historicalData;
+  
   const alerts: AlertData[] = [{
     id: '1',
     severity: 'warning',
@@ -350,6 +318,18 @@ export const AirQualityApp = () => {
     timestamp: 'Hace 4 horas'
   }];
   const aqiLevel = calculateAQILevel(currentAQI);
+
+  // Función para seleccionar una ciudad del mapa
+  const handleCitySelect = (location: AirQualityLocation) => {
+    setCurrentLocation({
+      lat: location.lat,
+      lng: location.lng,
+      name: location.name
+    });
+    setCurrentAQI(location.aqi);
+    // Cambiar automáticamente a la pestaña de resumen
+    setActiveTab('overview');
+  };
   useEffect(() => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(position => {
@@ -767,6 +747,21 @@ export const AirQualityApp = () => {
           opacity: 1
         }} className="p-4 lg:p-6 space-y-4 lg:space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                {/* Información de la ciudad seleccionada */}
+                <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-4 border border-[#87CEEB]/30 lg:col-span-2">
+                  <div className="flex items-center gap-4">
+                    <MapPin className="w-5 h-5 text-[#98D8C8] flex-shrink-0" />
+                    <div className="flex-1">
+                      <span className="text-base font-bold text-white">
+                        <span>Pronóstico para {currentLocation.name}</span>
+                      </span>
+                      <p className="text-xs text-[#B0E0E6]">
+                        <span>ICA Actual: {currentAQI} - {getAQILabel(aqiLevel)}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
                 {/* Pron�stico de 24 horas */}
                 <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 lg:col-span-2">
                   <div className="flex items-center justify-between mb-4">
@@ -878,9 +873,13 @@ export const AirQualityApp = () => {
                     <span>Monitoreo Global de Calidad del Aire</span>
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-2">
-                    {globalAirQualityData.map(location => <div key={location.id} className="flex items-center justify-between p-4 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#87CEEB]/30 hover:bg-[#87CEEB]/15 transition-colors" style={{
-                  boxShadow: '0 4px 8px rgba(135, 206, 235, 0.15), inset 0 -2px 4px rgba(0, 0, 0, 0.1)'
-                }}>
+                    {globalAirQualityData.map(location => <div 
+                      key={location.id} 
+                      onClick={() => handleCitySelect(location)}
+                      className="flex items-center justify-between p-4 bg-[#87CEEB]/10 backdrop-blur rounded-lg border border-[#87CEEB]/30 hover:bg-[#87CEEB]/20 transition-all cursor-pointer transform hover:scale-105" 
+                      style={{
+                        boxShadow: '0 4px 8px rgba(135, 206, 235, 0.15), inset 0 -2px 4px rgba(0, 0, 0, 0.1)'
+                      }}>
                         <div className="flex-1">
                           <p className="font-bold text-sm text-white mb-1">
                             <span>{location.name}</span>
