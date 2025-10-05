@@ -1,0 +1,567 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { MapPin, Search, Navigation, Target, X, Loader } from 'lucide-react';
+import 'leaflet/dist/leaflet.css';
+
+// Types for the TEMPO map interface
+interface Coordinates {
+  lat: number;
+  lon: number;
+}
+
+interface TempoResult {
+  lat: number;
+  lon: number;
+  aqi_satelital: number;
+  categoria: string;
+  color: string;
+  tiene_datos: boolean;
+  contaminantes: {
+    NO2?: { troposphere: number };
+    O3?: { troposphere: number };
+    HCHO?: { troposphere: number };
+  };
+}
+
+interface TempoResponse {
+  resultados: TempoResult[];
+}
+
+interface LocationSuggestion {
+  lat: string;
+  lon: string;
+  display_name: string;
+}
+
+interface TempoMapInterfaceProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+// Map click event type
+interface MapClickEvent {
+  latlng: {
+    lat: number;
+    lng: number;
+  };
+}
+
+const TempoMapInterface: React.FC<TempoMapInterfaceProps> = ({ isOpen, onClose }) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  // Using any for Leaflet objects to avoid type conflicts
+  const [map, setMap] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [clickModeActive, setClickModeActive] = useState(false);
+  const [temporaryPin, setTemporaryPin] = useState<any>(null);
+  const [temporaryCoords, setTemporaryCoords] = useState<Coordinates | null>(null);
+  const [results, setResults] = useState<TempoResult[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [numCoordinates, setNumCoordinates] = useState(9);
+  const [radius, setRadius] = useState(50);
+  const [heatLayers, setHeatLayers] = useState<any[]>([]);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  const handleMapClick = useCallback((e: MapClickEvent) => {
+    if (!clickModeActive || !map) return;
+
+    const lat = e.latlng.lat;
+    const lon = e.latlng.lng;
+
+    setTemporaryCoords({ lat, lon });
+
+    // Remove existing temporary pin
+    if (temporaryPin) {
+      map.removeLayer(temporaryPin);
+    }
+
+    import('leaflet').then((L) => {
+      const temporaryIcon = L.divIcon({
+        html: '<div style="background:#FF9800;width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 3px 8px rgba(0,0,0,0.4);"></div>',
+        className: '',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+
+      const newPin = L.marker([lat, lon], { icon: temporaryIcon })
+        .addTo(map)
+        .bindPopup(`<b>📍 Pin temporal</b><br>${lat.toFixed(6)}, ${lon.toFixed(6)}<br><small>Haz clic en otro lugar para moverlo</small>`);
+
+      setTemporaryPin(newPin);
+    });
+  }, [clickModeActive, map, temporaryPin]);
+
+  // Initialize Leaflet map
+  useEffect(() => {
+    if (isOpen && mapRef.current && !map) {
+      // Dynamically import Leaflet to avoid SSR issues
+      import('leaflet').then((L) => {
+        const newMap = L.map(mapRef.current!).setView([20, 0], 2);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 19
+        }).addTo(newMap);
+
+        newMap.on('click', handleMapClick);
+        setMap(newMap);
+      });
+    }
+
+    return () => {
+      if (map && !isOpen) {
+        map.remove();
+        setMap(null);
+      }
+    };
+  }, [isOpen]); // Remove map and handleMapClick from dependencies
+
+  // Separate useEffect for handling map click events
+  useEffect(() => {
+    if (map) {
+      map.off('click'); // Remove previous listeners
+      map.on('click', handleMapClick);
+    }
+  }, [map, handleMapClick]);
+
+  const searchLocations = async (query: string) => {
+    if (query.length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`
+      );
+      const locations = await response.json();
+      setSuggestions(locations);
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error('Error searching locations:', error);
+    }
+  };
+
+  const handleSearchInput = (value: string) => {
+    setSearchQuery(value);
+    
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      searchLocations(value);
+    }, 300);
+  };
+
+  const selectLocation = async (lat: number, lon: number, name: string) => {
+    setClickModeActive(false);
+    setSearchQuery(name);
+    setShowSuggestions(false);
+    setSelectedLocation(name);
+    
+    if (map) {
+      map.setView([lat, lon], 13);
+    }
+    
+    await consultTEMPO(lat, lon, name);
+  };
+
+  const useCurrentLocation = async () => {
+    setClickModeActive(false);
+    setIsLoading(true);
+
+    if (!navigator.geolocation) {
+      alert('Tu navegador no soporta geolocalización');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      });
+
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=es`
+      );
+      const data = await response.json();
+      const name = data.display_name;
+
+      if (map) {
+        map.setView([lat, lon], 13);
+      }
+      
+      setSelectedLocation(name);
+      await consultTEMPO(lat, lon, name);
+    } catch (error) {
+      let message = 'Error al obtener ubicación';
+      if (error instanceof GeolocationPositionError) {
+        if (error.code === 1) message = 'Permiso denegado';
+        else if (error.code === 2) message = 'Ubicación no disponible';
+        else if (error.code === 3) message = 'Tiempo agotado';
+      }
+
+      alert(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const activateClickMode = () => {
+    setClickModeActive(true);
+    setSelectedLocation('');
+    setResults([]);
+    clearHeatLayers();
+  };
+
+  const confirmTemporaryLocation = async () => {
+    if (!temporaryCoords) return;
+
+    setClickModeActive(false);
+    
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${temporaryCoords.lat}&lon=${temporaryCoords.lon}&accept-language=es`
+    );
+    const data = await response.json();
+    const name = data.display_name;
+
+    if (temporaryPin && map) {
+      map.removeLayer(temporaryPin);
+      setTemporaryPin(null);
+    }
+
+    setSelectedLocation(name);
+    await consultTEMPO(temporaryCoords.lat, temporaryCoords.lon, name);
+  };
+
+  const cancelClickMode = () => {
+    setClickModeActive(false);
+    
+    if (temporaryPin && map) {
+      map.removeLayer(temporaryPin);
+      setTemporaryPin(null);
+    }
+    
+    setTemporaryCoords(null);
+  };
+
+  const clearHeatLayers = () => {
+    if (map) {
+      heatLayers.forEach(layer => map.removeLayer(layer));
+      setHeatLayers([]);
+    }
+  };
+
+  const consultTEMPO = async (lat: number, lon: number, name: string) => {
+    setIsLoading(true);
+    clearHeatLayers();
+
+    try {
+      const response = await fetch('http://localhost:5000/api/tempo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          lat, 
+          lon, 
+          num_coordenadas: numCoordinates, 
+          radio: radius * 1000 
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Error al consultar TEMPO' }));
+        throw new Error(errorData.error || 'Error al consultar TEMPO');
+      }
+
+      const data: TempoResponse = await response.json();
+      setResults(data.resultados);
+
+      if (map) {
+        await import('leaflet').then((L) => {
+          const newLayers: any[] = [];
+
+          // Central marker
+          const centralIcon = L.divIcon({
+            html: '<div style="background:#2196F3;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 2px 5px rgba(0,0,0,0.3);"></div>',
+            className: '',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+          });
+          
+          const centralMarker = L.marker([lat, lon], { icon: centralIcon })
+            .addTo(map)
+            .bindPopup(`<b>📍 Ubicación consulta</b><br>${name}<br>${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+          newLayers.push(centralMarker);
+
+          const pointsWithData = data.resultados.filter(r => r.tiene_datos);
+          
+          // Heat zones
+          pointsWithData.forEach((item, index) => {
+            const zoneRadius = 3000;
+            
+            const circle = L.circle([item.lat, item.lon], {
+              color: item.color,
+              fillColor: item.color,
+              fillOpacity: 0.4,
+              opacity: 0.8,
+              radius: zoneRadius,
+              weight: 2
+            }).addTo(map);
+
+            let detailsHTML = `<b>🌡️ Zona ${index + 1}</b><br>`;
+            detailsHTML += `<div style="background:${item.color};color:white;padding:2px 8px;border-radius:3px;display:inline-block;font-weight:bold;">${item.aqi_satelital}</div><br>`;
+            detailsHTML += `<b>${item.categoria}</b><br><br>`;
+            
+            if (item.contaminantes.NO2) {
+              detailsHTML += `<b>NO₂:</b> ${item.contaminantes.NO2.troposphere.toExponential(2)} molec/cm²<br>`;
+            }
+            if (item.contaminantes.O3) {
+              detailsHTML += `<b>O₃:</b> ${item.contaminantes.O3.troposphere.toExponential(2)} molec/cm²<br>`;
+            }
+            if (item.contaminantes.HCHO) {
+              detailsHTML += `<b>HCHO:</b> ${item.contaminantes.HCHO.troposphere.toExponential(2)} molec/cm²<br>`;
+            }
+            
+            detailsHTML += `<br><small>${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</small>`;
+            
+            circle.bindPopup(detailsHTML);
+            newLayers.push(circle);
+          });
+
+          // Adjust view
+          if (pointsWithData.length > 0) {
+            const bounds = L.latLngBounds([
+              [lat, lon],
+              ...pointsWithData.map(p => [p.lat, p.lon] as [number, number])
+            ]);
+            map.fitBounds(bounds, { padding: [80, 80] });
+          }
+
+          setHeatLayers(newLayers);
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Cleanup map when component unmounts or modal closes
+  useEffect(() => {
+    return () => {
+      if (map) {
+        map.remove();
+        setMap(null);
+      }
+    };
+  }, []);
+
+  // Handle modal close cleanup
+  useEffect(() => {
+    if (!isOpen && map) {
+      map.remove();
+      setMap(null);
+      setClickModeActive(false);
+      setTemporaryCoords(null);
+      if (temporaryPin) {
+        setTemporaryPin(null);
+      }
+    }
+  }, [isOpen, map, temporaryPin]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-gradient-to-br from-[#2d5a7b] to-[#1a3a52] rounded-2xl shadow-2xl border border-[#87CEEB]/30 w-full max-w-6xl h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-[#87CEEB]/30">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <MapPin className="w-6 h-6 text-[#98D8C8]" />
+            Mapa Interactivo TEMPO
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg bg-[#87CEEB]/20 hover:bg-[#87CEEB]/30 transition-colors"
+          >
+            <X className="w-5 h-5 text-white" />
+          </button>
+        </div>
+
+        <div className="flex-1 flex">
+          {/* Controls Panel */}
+          <div className="w-80 p-4 border-r border-[#87CEEB]/30 space-y-4 overflow-y-auto">
+            {/* Location Selection */}
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <button
+                  onClick={useCurrentLocation}
+                  disabled={isLoading}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#98D8C8] hover:bg-[#98D8C8]/80 disabled:opacity-50 text-[#1a3a52] rounded-lg font-medium transition-colors"
+                >
+                  <Navigation className="w-4 h-4" />
+                  Mi Ubicación
+                </button>
+                <button
+                  onClick={activateClickMode}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors ${
+                    clickModeActive 
+                      ? 'bg-[#FF9800] text-white' 
+                      : 'bg-[#87CEEB] hover:bg-[#87CEEB]/80 text-[#1a3a52]'
+                  }`}
+                >
+                  <Target className="w-4 h-4" />
+                  Clic en Mapa
+                </button>
+              </div>
+
+              {/* Search */}
+              <div className="relative">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#B0E0E6]" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => handleSearchInput(e.target.value)}
+                    onFocus={() => setShowSuggestions(suggestions.length > 0)}
+                    placeholder="Buscar ciudad o lugar..."
+                    className="w-full pl-10 pr-4 py-2 bg-[#87CEEB]/10 border border-[#87CEEB]/30 rounded-lg text-white placeholder-[#B0E0E6] focus:outline-none focus:border-[#87CEEB]"
+                  />
+                </div>
+                
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#2d5a7b] border border-[#87CEEB]/30 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                    {suggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => selectLocation(parseFloat(suggestion.lat), parseFloat(suggestion.lon), suggestion.display_name)}
+                        className="w-full text-left px-4 py-3 text-white hover:bg-[#87CEEB]/20 border-b border-[#87CEEB]/20 last:border-b-0 transition-colors"
+                      >
+                        <div className="text-sm">{suggestion.display_name}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Parameters */}
+            <div className="space-y-3">
+              <h3 className="text-white font-medium">Parámetros</h3>
+              <div>
+                <label className="block text-sm text-[#B0E0E6] mb-1">Radio (km)</label>
+                <input
+                  type="number"
+                  value={radius}
+                  onChange={(e) => setRadius(parseInt(e.target.value))}
+                  min="1"
+                  max="200"
+                  className="w-full px-3 py-2 bg-[#87CEEB]/10 border border-[#87CEEB]/30 rounded-lg text-white focus:outline-none focus:border-[#87CEEB]"
+                />
+              </div>
+            </div>
+
+            {/* Temporary Pin Actions */}
+            {temporaryCoords && (
+              <div className="space-y-2">
+                <div className="text-sm text-white">
+                  Pin colocado en:<br/>
+                  {temporaryCoords.lat.toFixed(6)}, {temporaryCoords.lon.toFixed(6)}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={confirmTemporaryLocation}
+                    className="flex-1 px-3 py-2 bg-[#98D8C8] hover:bg-[#98D8C8]/80 text-[#1a3a52] rounded-lg font-medium transition-colors"
+                  >
+                    ✓ Confirmar
+                  </button>
+                  <button
+                    onClick={cancelClickMode}
+                    className="flex-1 px-3 py-2 bg-[#E67E22] hover:bg-[#E67E22]/80 text-white rounded-lg font-medium transition-colors"
+                  >
+                    ✗ Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Results */}
+            {results.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-white font-medium">Resultados</h3>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {selectedLocation && (
+                    <div className="text-sm text-[#B0E0E6] mb-2">
+                      📍 {selectedLocation}
+                    </div>
+                  )}
+                  <div className="text-sm text-[#B0E0E6]">
+                    📊 Zonas analizadas: {results.filter(r => r.tiene_datos).length} con datos / {results.filter(r => !r.tiene_datos).length} sin datos
+                  </div>
+                  {results.filter(r => r.tiene_datos).map((result, index) => (
+                    <div
+                      key={index}
+                      className="p-3 rounded-lg border-l-4"
+                      style={{
+                        borderLeftColor: result.color,
+                        backgroundColor: `${result.color}15`,
+                        border: `1px solid ${result.color}40`
+                      }}
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-white font-medium">Zona {index + 1}</span>
+                        <span
+                          className="px-2 py-1 rounded text-white text-sm font-bold"
+                          style={{ backgroundColor: result.color }}
+                        >
+                          {result.aqi_satelital}
+                        </span>
+                      </div>
+                      <div className="text-xs text-[#B0E0E6]">{result.categoria}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {isLoading && (
+              <div className="flex items-center justify-center py-8">
+                <Loader className="w-6 h-6 text-[#98D8C8] animate-spin" />
+                <span className="ml-2 text-white">Consultando datos TEMPO...</span>
+              </div>
+            )}
+          </div>
+
+          {/* Map Container */}
+          <div className="flex-1 relative">
+            <div
+              ref={mapRef}
+              className="w-full h-full"
+              style={{ minHeight: '400px' }}
+            />
+            {clickModeActive && (
+              <div className="absolute top-4 left-4 right-4 bg-[#FF9800]/90 text-white px-4 py-2 rounded-lg text-center font-medium">
+                🗺️ Haz clic en el mapa para seleccionar ubicación...
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TempoMapInterface;

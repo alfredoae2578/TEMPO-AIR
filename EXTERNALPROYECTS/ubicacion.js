@@ -185,12 +185,14 @@ async function usarUbicacionActual() {
     }
 }
 
-function getTextoCalidad(score) {
-    if (score >= 80) return 'Excelente';
-    if (score >= 65) return 'Buena';
-    if (score >= 50) return 'Moderada';
-    if (score >= 35) return 'Mala';
-    return 'Pésima';
+function getTextoCalidad(aqi) {
+    if (aqi === null || aqi === undefined) return 'Sin datos';
+    if (aqi <= 50) return 'Bueno';
+    if (aqi <= 100) return 'Moderado';
+    if (aqi <= 150) return 'Poco saludable para sensibles';
+    if (aqi <= 200) return 'Poco saludable';
+    if (aqi <= 300) return 'Muy poco saludable';
+    return 'Peligroso';
 }
 
 async function consultarTEMPO(lat, lon, nombre) {
@@ -245,8 +247,8 @@ async function consultarTEMPO(lat, lon, nombre) {
             // Popup con detalles
             const contaminantes = item.contaminantes;
             let detallesHTML = `<b>🌡️ Zona ${index + 1}</b><br>`;
-            detallesHTML += `<div class="indice-score" style="background:${item.color};">${item.indice_calidad}</div><br>`;
-            detallesHTML += `<b>${getTextoCalidad(item.indice_calidad)}</b><br><br>`;
+            detallesHTML += `<div class="indice-score" style="background:${item.color};">${item.aqi_satelital}</div><br>`;
+            detallesHTML += `<b>${item.categoria}</b><br><br>`;
             
             if (contaminantes.NO2) {
                 detallesHTML += `<b>NO₂:</b> ${contaminantes.NO2.troposphere.toExponential(2)} molec/cm²<br>`;
@@ -302,10 +304,10 @@ async function consultarTEMPO(lat, lon, nombre) {
                         <div style="display:flex;justify-content:space-between;align-items:center;">
                             <span><b>Zona ${index + 1}</b></span>
                             <span class="indice-score" style="background:${item.color};font-size:16px;padding:3px 10px;">
-                                ${item.indice_calidad}
+                                ${item.aqi_satelital}
                             </span>
                         </div>
-                        <small style="color:#666;">${getTextoCalidad(item.indice_calidad)}</small>
+                        <small style="color:#666;">${item.categoria}</small>
                     </div>
                 `;
             });
