@@ -12,8 +12,8 @@ import traceback
 app = Flask(__name__)
 CORS(app)
 
-os.environ['EARTHDATA_USERNAME'] = "alfredo_ae6353563"
-os.environ['EARTHDATA_PASSWORD'] = "!7xbvu74PN#uU&X"
+os.environ['EARTHDATA_USERNAME'] = "" # insert your username here
+os.environ['EARTHDATA_PASSWORD'] = "" # insert your password here
 #auth = earthaccess.login(strategy="environment")
 
 # Carga de credenciales desde variables de entorno
