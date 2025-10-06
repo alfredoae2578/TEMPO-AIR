@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from dotenv import load_dotenv
 import earthaccess
 import xarray as xr
 import numpy as np
@@ -9,16 +8,41 @@ import random
 import math
 import os
 import traceback
+import json
 
 app = Flask(__name__)
 CORS(app)
 
-# Load environment variables from .env file
-load_dotenv()
+# Load credentials from vercel.json
+def load_credentials_from_vercel():
+    try:
+        # Try to get from environment variables first (for production)
+        username = os.environ.get('EARTHDATA_USERNAME')
+        password = os.environ.get('EARTHDATA_PASSWORD')
+        
+        if username and password:
+            return username, password
+            
+        # If not in environment, read from vercel.json (for local development)
+        vercel_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'vercel.json')
+        with open(vercel_path, 'r') as f:
+            vercel_config = json.load(f)
+            env_vars = vercel_config.get('env', {})
+            username = env_vars.get('EARTHDATA_USERNAME', '').replace('@', '')
+            password = env_vars.get('EARTHDATA_PASSWORD', '').replace('@', '')
+            return username, password
+    except Exception as e:
+        print(f"Error loading credentials: {e}")
+        return None, None
 
-# Carga de credenciales desde variables de entorno
-if 'EARTHDATA_USERNAME' not in os.environ or 'EARTHDATA_PASSWORD' not in os.environ:
-    raise Exception("Error: Debes configurar las variables de entorno EARTHDATA_USERNAME y EARTHDATA_PASSWORD")
+# Carga de credenciales desde vercel.json
+username, password = load_credentials_from_vercel()
+if not username or not password:
+    raise Exception("Error: No se pudieron cargar las credenciales EARTHDATA desde vercel.json")
+
+# Set environment variables for earthaccess
+os.environ['EARTHDATA_USERNAME'] = username
+os.environ['EARTHDATA_PASSWORD'] = password
 
 auth = earthaccess.login(strategy="environment")
 

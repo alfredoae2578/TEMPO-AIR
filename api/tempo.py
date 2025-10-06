@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from dotenv import load_dotenv
 import earthaccess
 import xarray as xr
 import numpy as np
@@ -11,13 +10,36 @@ import os
 import traceback
 import json
 
-# Load environment variables
-load_dotenv()
+# Load credentials from vercel.json
+def load_credentials_from_vercel():
+    try:
+        # Try to get from environment variables first (for production)
+        username = os.environ.get('EARTHDATA_USERNAME')
+        password = os.environ.get('EARTHDATA_PASSWORD')
+        
+        if username and password:
+            return username, password
+            
+        # If not in environment, read from vercel.json (for local development)
+        vercel_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'vercel.json')
+        with open(vercel_path, 'r') as f:
+            vercel_config = json.load(f)
+            env_vars = vercel_config.get('env', {})
+            username = env_vars.get('EARTHDATA_USERNAME', '').replace('@', '')
+            password = env_vars.get('EARTHDATA_PASSWORD', '').replace('@', '')
+            return username, password
+    except Exception as e:
+        print(f"Error loading credentials: {e}")
+        return None, None
 
 # Initialize authentication once (with better error handling for serverless)
 auth = None
-if 'EARTHDATA_USERNAME' in os.environ and 'EARTHDATA_PASSWORD' in os.environ:
+username, password = load_credentials_from_vercel()
+if username and password:
     try:
+        # Set environment variables for earthaccess
+        os.environ['EARTHDATA_USERNAME'] = username
+        os.environ['EARTHDATA_PASSWORD'] = password
         auth = earthaccess.login(strategy="environment")
     except Exception as e:
         print(f"Error initializing Earthdata authentication: {e}")
