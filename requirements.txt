@@ -1,0 +1,22 @@
+# Flask web framework and extensions
+Flask>=2.3.0
+Flask-CORS>=4.0.0
+
+# Environment variables management
+python-dotenv>=1.0.0
+
+# NASA Earth data access
+earthaccess>=0.8.0
+
+# Scientific computing and data processing
+xarray>=2023.1.0
+numpy>=1.24.0
+netCDF4>=1.6.0
+
+# Additional dependencies for data processing
+h5netcdf>=1.2.0
+scipy>=1.10.0
+pandas>=2.0.0
+
+# Optional: for better performance with large datasets
+dask>=2023.1.0

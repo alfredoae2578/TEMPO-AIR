@@ -102,7 +102,7 @@ If you prefer manual setup:
 npm install
 
 # Install Python dependencies
-pip install flask flask-cors earthaccess xarray numpy netcdf4
+pip install -r requirements.txt
 
 # Build for production
 npm run build
@@ -174,6 +174,31 @@ src/
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
 - `npm run format` - Format code with Prettier
+
+## 🚀 Deployment
+
+### Frontend Deployment (Vercel)
+The React frontend can be deployed on Vercel:
+
+1. **Framework Preset**: Vite
+2. **Build Command**: `npm run build`
+3. **Output Directory**: `dist`
+4. **Environment Variables**: Add your `VITE_GOOGLE_MAPS_API_KEY`
+
+### Backend Deployment
+The Flask backend (`EXTERNALPROYECTS/App.py`) requires a Python-compatible hosting service:
+
+**Recommended platforms:**
+- **Railway** - Full-stack deployment
+- **Render** - Free tier available
+- **Heroku** - Easy Python deployment
+- **DigitalOcean App Platform** - Scalable option
+
+**Environment Variables needed:**
+- `EARTHDATA_USERNAME`
+- `EARTHDATA_PASSWORD`
+
+**Dependencies**: All listed in `requirements.txt`
 
 ## ⚠️ Important Notes
 
