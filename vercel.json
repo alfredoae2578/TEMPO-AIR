@@ -4,8 +4,9 @@
   "framework": "vite",
   "installCommand": "npm install",
   "functions": {
-    "api/*.py": {
-      "runtime": "python3.11"
+    "api/tempo.py": {
+      "runtime": "python3.x",
+      "maxDuration": 30
     }
   }
 }
