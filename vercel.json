@@ -2,5 +2,14 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "functions": {
+    "api/tempo.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "env": {
+    "EARTHDATA_USERNAME": "@earthdata_username",
+    "EARTHDATA_PASSWORD": "@earthdata_password"
+  }
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Earth3D from './Earth3D';
+import EarthBackground from './earth3d/EarthBackground';
 import AirQualityHeatmap from './AirQualityHeatmap';
 import { motion } from 'framer-motion';
 
@@ -15,7 +15,7 @@ const CombinedVisualization: React.FC<CombinedVisualizationProps> = ({ className
       {/* Fondo 3D de la Tierra */}
       {showEarth && (
         <div className="absolute inset-0 z-0">
-          <Earth3D />
+          <EarthBackground />
         </div>
       )}
       
