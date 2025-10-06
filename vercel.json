@@ -6,6 +6,9 @@
   "functions": {
     "api/**": {
       "excludeFiles": "{.next,*.cache,node_modules,public,app}/**"
+    },
+    "app/api/*.py": {
+      "use": "@vercel/python"
     }
   }
 }
