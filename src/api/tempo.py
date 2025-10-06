@@ -12,8 +12,8 @@ app = Flask(__name__)
 CORS(app)
 
 # Credenciales
-os.environ['EARTHDATA_USERNAME'] = "alfredo_ae6353563"
-os.environ['EARTHDATA_PASSWORD'] = "T#nEtWsq3vHK*cut"
+os.environ['EARTHDATA_USERNAME'] = ""
+os.environ['EARTHDATA_PASSWORD'] = ""
 auth = earthaccess.login(strategy="environment")
 
 def generar_coordenadas_aleatorias(lat_centro, lon_centro, radio_metros, cantidad):
