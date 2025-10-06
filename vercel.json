@@ -5,7 +5,7 @@
   "installCommand": "npm install",
   "functions": {
     "api/tempo.py": {
-      "runtime": "@vercel/python"
+      "runtime": "@vercel/python@3.12.0"
     }
   }
 }
