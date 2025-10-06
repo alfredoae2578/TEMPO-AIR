@@ -4,9 +4,8 @@
   "framework": "vite",
   "installCommand": "npm install",
   "functions": {
-    "api/tempo.py": {
-      "runtime": "python3.x",
-      "maxDuration": 30
+    "api/**": {
+      "excludeFiles": "{.next,*.cache,node_modules,public,app}/**"
     }
   }
 }
