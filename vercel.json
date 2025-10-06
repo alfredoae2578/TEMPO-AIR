@@ -9,7 +9,7 @@
     }
   },
   "env": {
-    "EARTHDATA_USERNAME": "@earthdata_username",
-    "EARTHDATA_PASSWORD": "@earthdata_password"
+    "EARTHDATA_USERNAME": "@EARTHDATA_USERNAME",
+    "EARTHDATA_PASSWORD": "@EARTHDATA_PASSWORD"
   }
 }
