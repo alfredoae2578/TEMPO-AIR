@@ -186,9 +186,27 @@ src/
 ### Scientific Disclaimer
 > **Important**: This platform uses experimental satellite-derived air quality indices. While based on validated scientific methods, it should not replace official ground-based monitoring stations for health-critical decisions. Intended for educational and research purposes.
 
-### Credentials
-- NASA Earthdata credentials are currently hardcoded for demo purposes
-- For production deployment, implement proper environment variable management or `.netrc` configuration
+### Environment Setup & Credentials
+
+**Required: NASA Earthdata Login Credentials**
+
+1. **Get NASA Earthdata credentials**:
+   - Visit: https://urs.earthdata.nasa.gov/
+   - Create a free account or log in
+   - Note your username and password
+
+2. **Configure environment variables**:
+   - Copy the `.env` file (contains template values)
+   - Replace the dummy values with your actual credentials:
+   ```bash
+   EARTHDATA_USERNAME=your_actual_username
+   EARTHDATA_PASSWORD=your_actual_password
+   ```
+
+3. **Security Note**: 
+   - Never commit real credentials to version control
+   - The `.env` file is included in this repo with dummy values for setup reference
+   - After setup, your real `.env` file will be ignored by git
 
 ## 🌟 Features Highlights
 
