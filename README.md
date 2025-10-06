@@ -82,8 +82,8 @@ An advanced air quality monitoring platform that combines **NASA's TEMPO satelli
 
 3. **Start the backend API (Port 5001)**
    ```bash
-   cd src/api
-   python tempo.py
+   cd EXTERNALPROYECTS
+   python App.py
    ```
 
 4. **Start the frontend development server (Port 5173)**
