@@ -2,13 +2,5 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "installCommand": "npm install",
-  "functions": {
-    "api/**": {
-      "excludeFiles": "{.next,*.cache,node_modules,public,app}/**"
-    },
-    "app/api/*.py": {
-      "use": "@vercel/python"
-    }
-  }
+  "installCommand": "npm install"
 }
