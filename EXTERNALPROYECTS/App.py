@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from dotenv import load_dotenv
 import earthaccess
 import xarray as xr
 import numpy as np
@@ -12,9 +13,8 @@ import traceback
 app = Flask(__name__)
 CORS(app)
 
-os.environ['EARTHDATA_USERNAME'] = "" # insert your username here
-os.environ['EARTHDATA_PASSWORD'] = "" # insert your password here
-#auth = earthaccess.login(strategy="environment")
+# Load environment variables from .env file
+load_dotenv()
 
 # Carga de credenciales desde variables de entorno
 if 'EARTHDATA_USERNAME' not in os.environ or 'EARTHDATA_PASSWORD' not in os.environ:
