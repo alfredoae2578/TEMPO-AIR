@@ -7,9 +7,5 @@
     "api/tempo.py": {
       "runtime": "python3.9"
     }
-  },
-  "env": {
-    "EARTHDATA_USERNAME": "@acceso_data",
-    "EARTHDATA_PASSWORD": "@acceso_password"
   }
 }
