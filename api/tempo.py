@@ -16,7 +16,7 @@ load_dotenv()
 
 # Initialize authentication once (with better error handling for serverless)
 auth = None
-if 'acceso_data' in os.environ and 'acceso_password' in os.environ:
+if 'EARTHDATA_USERNAME' in os.environ and 'EARTHDATA_PASSWORD' in os.environ:
     try:
         auth = earthaccess.login(strategy="environment")
     except Exception as e:

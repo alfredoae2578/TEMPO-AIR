@@ -9,7 +9,7 @@
     }
   },
   "env": {
-    "acceso_data": "@acceso_data",
-    "acceso_password": "@acceso_password"
+    "EARTHDATA_USERNAME": "@acceso_data",
+    "EARTHDATA_PASSWORD": "@acceso_password"
   }
 }
