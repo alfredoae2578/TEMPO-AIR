@@ -15,6 +15,6 @@ export default defineConfig({
     port: 5173,
     host: true, // Permite conexiones externas
     strictPort: true, // Falla si el puerto no está disponible en lugar de cambiar automáticamente
-    open: true, // Abre automáticamente el navegador
+    open: false, // Don't auto-open browser (causes issues in CI/CD environments)
   },
 });
