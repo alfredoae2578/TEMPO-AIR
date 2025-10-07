@@ -68,26 +68,39 @@ def ensure_authenticated():
                 os.environ['EARTHDATA_USERNAME'] = username
                 os.environ['EARTHDATA_PASSWORD'] = password
                 auth = earthaccess.login(strategy="environment")
-                print(f"[AUTH] Success with primary credentials!")
-                return auth
+
+                # Verify auth actually worked by checking __store__
+                if auth is not None and earthaccess.__store__ is not None:
+                    print(f"[AUTH] Success with primary credentials!")
+                    return auth
+                else:
+                    raise Exception("Login returned None or store not initialized")
             except Exception as e:
                 _auth_failed_primary = True
                 print(f"[AUTH] Primary credentials failed: {e}")
+                auth = None
 
     # Try backup credentials if primary failed
     if not _auth_failed_backup:
         username = os.environ.get('EARTHDATA_USERNAME_BACKUP')
         password = os.environ.get('EARTHDATA_PASSWORD_BACKUP')
         if username and password:
+            print(f"[AUTH] Attempting backup credentials for user: {username}")
             try:
                 os.environ['EARTHDATA_USERNAME'] = username
                 os.environ['EARTHDATA_PASSWORD'] = password
                 auth = earthaccess.login(strategy="environment")
-                print(f"[AUTH] Success with backup credentials!")
-                return auth
+
+                # Verify auth actually worked
+                if auth is not None and earthaccess.__store__ is not None:
+                    print(f"[AUTH] Success with backup credentials!")
+                    return auth
+                else:
+                    raise Exception("Backup login returned None or store not initialized")
             except Exception as e:
                 _auth_failed_backup = True
                 print(f"[AUTH] Backup credentials failed: {e}")
+                auth = None
 
     raise Exception("All authentication attempts failed. Both accounts may be locked.")
 
