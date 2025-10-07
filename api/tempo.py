@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from werkzeug.wrappers import Request, Response
 import earthaccess
 import xarray as xr
 import numpy as np
@@ -282,62 +283,68 @@ def process_tempo_request(data):
 
     return {'resultados': resultados}, 200
 
-# Vercel serverless function handler
-def handler(req):
-    """Vercel serverless function entry point"""
+# Vercel serverless function handler (WSGI-compatible)
+def handler(environ, start_response):
+    """Vercel serverless function entry point (WSGI)"""
+    print("[VERCEL] Handler called")
+
+    request = Request(environ)
+
+    # Set CORS headers
+    headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Content-Type': 'application/json'
+    }
+
     try:
         # Handle CORS preflight
-        if req.method == 'OPTIONS':
-            return {
-                'statusCode': 200,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type',
-                },
-                'body': ''
-            }
-        
-        if req.method != 'POST':
-            return {
-                'statusCode': 405,
-                'headers': {'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'Method not allowed'})
-            }
-        
+        if request.method == 'OPTIONS':
+            response = Response('', status=200, headers=headers)
+            return response(environ, start_response)
+
+        if request.method != 'POST':
+            response = Response(
+                json.dumps({'error': 'Method not allowed'}),
+                status=405,
+                headers=headers
+            )
+            return response(environ, start_response)
+
         # Parse request body
         try:
-            if hasattr(req, 'body'):
-                data = json.loads(req.body) if isinstance(req.body, str) else req.body
-            else:
-                data = req.json if hasattr(req, 'json') else {}
-        except:
-            return {
-                'statusCode': 400,
-                'headers': {'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'Invalid JSON'})
-            }
-        
-        # Process using exact same logic as original
+            data = request.get_json(force=True)
+            print(f"[VERCEL] Request data: {data}")
+        except Exception as e:
+            print(f"[VERCEL] Error parsing JSON: {e}")
+            response = Response(
+                json.dumps({'error': 'Invalid JSON'}),
+                status=400,
+                headers=headers
+            )
+            return response(environ, start_response)
+
+        # Process request
         result, status_code = process_tempo_request(data)
-        
-        return {
-            'statusCode': status_code,
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Content-Type': 'application/json'
-            },
-            'body': json.dumps(result)
-        }
-        
+        print(f"[VERCEL] Response status: {status_code}")
+
+        response = Response(
+            json.dumps(result),
+            status=status_code,
+            headers=headers
+        )
+        return response(environ, start_response)
+
     except Exception as e:
-        print(f"Error in serverless handler: {e}")
+        print(f"[VERCEL] Error in serverless handler: {e}")
         traceback.print_exc()
-        return {
-            'statusCode': 500,
-            'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Internal server error'})
-        }
+        response = Response(
+            json.dumps({'error': f'Internal server error: {str(e)}'}),
+            status=500,
+            headers=headers
+        )
+        return response(environ, start_response)
 
 # Flask app for local development
 app = Flask(__name__)
