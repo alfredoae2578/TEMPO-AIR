@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MapPin, Search, Navigation, Target, X, Loader, Activity } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
+import { fetchTempoData } from '../lib/api-config';
 
 // Types for the TEMPO map interface
 interface Coordinates {
@@ -61,7 +62,7 @@ const TempoMapInterface: React.FC<TempoMapInterfaceProps> = ({ isOpen, onClose }
   const [selectedLocation, setSelectedLocation] = useState<string>('');
   const [radius, setRadius] = useState(50);
   const [heatLayers, setHeatLayers] = useState<any[]>([]);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const handleMapClick = useCallback((e: MapClickEvent) => {
     if (!clickModeActive || !map) return;
