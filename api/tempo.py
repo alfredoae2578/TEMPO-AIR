@@ -19,40 +19,77 @@ load_dotenv()
 def load_credentials():
     """
     Load credentials in priority order:
-    1. Environment variables (production/Vercel)
-    2. .env file (local development)
+    1. Primary credentials (EARTHDATA_USERNAME, EARTHDATA_PASSWORD)
+    2. Backup credentials (EARTHDATA_USERNAME_BACKUP, EARTHDATA_PASSWORD_BACKUP)
+    3. .env file (local development)
     """
     try:
+        # Try primary credentials first
         username = os.environ.get('EARTHDATA_USERNAME')
         password = os.environ.get('EARTHDATA_PASSWORD')
 
         if username and password:
-            print(f"Credentials loaded successfully for user: {username}")
-            return username, password
-        else:
-            print("No credentials found. Please set EARTHDATA_USERNAME and EARTHDATA_PASSWORD")
-            return None, None
+            print(f"[CREDS] Primary credentials loaded for user: {username}")
+            return username, password, 'primary'
+
+        # Try backup credentials
+        username = os.environ.get('EARTHDATA_USERNAME_BACKUP')
+        password = os.environ.get('EARTHDATA_PASSWORD_BACKUP')
+
+        if username and password:
+            print(f"[CREDS] Backup credentials loaded for user: {username}")
+            return username, password, 'backup'
+
+        print("[CREDS] No credentials found. Please set EARTHDATA_USERNAME and EARTHDATA_PASSWORD")
+        return None, None, None
 
     except Exception as e:
-        print(f"Error loading credentials: {e}")
-        return None, None
+        print(f"[CREDS] Error loading credentials: {e}")
+        return None, None, None
 
 # Global auth variable (will be initialized on first request)
 auth = None
 
+_auth_failed_primary = False
+_auth_failed_backup = False
+
 def ensure_authenticated():
-    """Ensure earthaccess is authenticated. Call this at the start of each request."""
-    global auth
-    if auth is None:
-        username, password = load_credentials()
+    """Ensure earthaccess is authenticated. Try primary, then backup credentials."""
+    global auth, _auth_failed_primary, _auth_failed_backup
+
+    if auth is not None:
+        return auth
+
+    # Try primary credentials
+    if not _auth_failed_primary:
+        username, password, cred_type = load_credentials()
+        if username and password and cred_type == 'primary':
+            try:
+                os.environ['EARTHDATA_USERNAME'] = username
+                os.environ['EARTHDATA_PASSWORD'] = password
+                auth = earthaccess.login(strategy="environment")
+                print(f"[AUTH] Success with primary credentials!")
+                return auth
+            except Exception as e:
+                _auth_failed_primary = True
+                print(f"[AUTH] Primary credentials failed: {e}")
+
+    # Try backup credentials if primary failed
+    if not _auth_failed_backup:
+        username = os.environ.get('EARTHDATA_USERNAME_BACKUP')
+        password = os.environ.get('EARTHDATA_PASSWORD_BACKUP')
         if username and password:
             try:
+                os.environ['EARTHDATA_USERNAME'] = username
+                os.environ['EARTHDATA_PASSWORD'] = password
                 auth = earthaccess.login(strategy="environment")
-                print("Earthdata authentication successful!")
+                print(f"[AUTH] Success with backup credentials!")
+                return auth
             except Exception as e:
-                print(f"Error initializing Earthdata authentication: {e}")
-                raise
-    return auth
+                _auth_failed_backup = True
+                print(f"[AUTH] Backup credentials failed: {e}")
+
+    raise Exception("All authentication attempts failed. Both accounts may be locked.")
 
 
 # EXACT SAME FUNCTIONS AS ORIGINAL App.py
@@ -163,11 +200,17 @@ def consultar_tempo_coordenada(lat, lon):
     print(f"\n--- Consultando datos para {lat:.6f}, {lon:.6f} ---")
 
     # Ensure authentication before making requests
-    ensure_authenticated()
+    try:
+        auth_result = ensure_authenticated()
+        print(f"[AUTH] Authentication status: {auth_result is not None}")
+    except Exception as e:
+        print(f"[AUTH ERROR] Failed to authenticate: {e}")
+        raise Exception(f"Authentication failed: {e}")
 
     fecha_fin = datetime.now()
-    fecha_inicio = fecha_fin - timedelta(days=30)
+    fecha_inicio = fecha_fin - timedelta(days=7)  # Reduced to 7 days for better data availability
     temporal = (fecha_inicio.strftime('%Y-%m-%d'), fecha_fin.strftime('%Y-%m-%d'))
+    print(f"[TEMPORAL] Searching data from {temporal[0]} to {temporal[1]}")
     
     datasets_config = [
         {"short_name": "TEMPO_NO2_L3", "version": "V03", "contaminante": "NO2"},
@@ -181,14 +224,17 @@ def consultar_tempo_coordenada(lat, lon):
         print(f"\n  [DEBUG] Buscando {config['short_name']}...")
         
         try:
+            print(f"  [SEARCH] Dataset: {config['short_name']}, BBox: ({lon - 0.5}, {lat - 0.5}, {lon + 0.5}, {lat + 0.5})")
             results = earthaccess.search_data(
                 short_name=config["short_name"], version=config["version"],
                 temporal=temporal, bounding_box=(lon - 0.5, lat - 0.5, lon + 0.5, lat + 0.5),
                 count=1
             )
-            
-            print(f"  [DEBUG] Granules encontrados: {len(results)}")
-            if not results: continue
+
+            print(f"  [SEARCH RESULT] Granules encontrados: {len(results)}")
+            if not results:
+                print(f"  [SEARCH] No granules found for {config['short_name']}")
+                continue
             
             files = earthaccess.open(results[:1])
             print(f"  [DEBUG] Archivos abiertos: {len(files)}")
