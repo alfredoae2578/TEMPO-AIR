@@ -36,15 +36,22 @@ def load_credentials():
         print(f"Error loading credentials: {e}")
         return None, None
 
-# Initialize authentication once
+# Global auth variable (will be initialized on first request)
 auth = None
-username, password = load_credentials()
-if username and password:
-    try:
-        auth = earthaccess.login(strategy="environment")
-        print("Earthdata authentication successful!")
-    except Exception as e:
-        print(f"Error initializing Earthdata authentication: {e}")
+
+def ensure_authenticated():
+    """Ensure earthaccess is authenticated. Call this at the start of each request."""
+    global auth
+    if auth is None:
+        username, password = load_credentials()
+        if username and password:
+            try:
+                auth = earthaccess.login(strategy="environment")
+                print("Earthdata authentication successful!")
+            except Exception as e:
+                print(f"Error initializing Earthdata authentication: {e}")
+                raise
+    return auth
 
 
 # EXACT SAME FUNCTIONS AS ORIGINAL App.py
@@ -153,7 +160,10 @@ def get_categoria(aqi):
 
 def consultar_tempo_coordenada(lat, lon):
     print(f"\n--- Consultando datos para {lat:.6f}, {lon:.6f} ---")
-    
+
+    # Ensure authentication before making requests
+    ensure_authenticated()
+
     fecha_fin = datetime.now()
     fecha_inicio = fecha_fin - timedelta(days=30)
     temporal = (fecha_inicio.strftime('%Y-%m-%d'), fecha_fin.strftime('%Y-%m-%d'))
