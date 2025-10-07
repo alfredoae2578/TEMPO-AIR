@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "npm run clean && tsc -b && vite build",
     "build:vercel": "rm -rf .next dist build .cache && tsc -b && vite build",
+    "build:analyze": "npm run build && npx vite-bundle-analyzer dist",
+    "analyze": "npm run build:analyze",
     "clean": "rm -rf .next dist build .cache node_modules/.cache && find . -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true",
+    "size": "npm run build && ls -lah dist/",
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write .",
@@ -69,6 +72,8 @@
     "tw-animate-css": "^1.3.7",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "vite-bundle-analyzer": "^1.2.3",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }
