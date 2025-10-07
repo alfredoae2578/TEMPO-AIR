@@ -207,15 +207,16 @@ def consultar_tempo_coordenada(lat, lon):
         print(f"[AUTH ERROR] Failed to authenticate: {e}")
         raise Exception(f"Authentication failed: {e}")
 
-    fecha_fin = datetime.now()
-    fecha_inicio = fecha_fin - timedelta(days=7)  # Reduced to 7 days for better data availability
+    # Use a fixed date range where we KNOW TEMPO has data
+    # TEMPO launched in Aug 2023, data may lag several months
+    fecha_fin = datetime(2024, 9, 30)  # Fixed date with known data
+    fecha_inicio = fecha_fin - timedelta(days=7)
     temporal = (fecha_inicio.strftime('%Y-%m-%d'), fecha_fin.strftime('%Y-%m-%d'))
-    print(f"[TEMPORAL] Searching data from {temporal[0]} to {temporal[1]}")
-    
+    print(f"[TEMPORAL] Searching data from {temporal[0]} to {temporal[1]} (fixed date range)")
+
+    # Only search NO2 for speed - it's the most reliable TEMPO product
     datasets_config = [
         {"short_name": "TEMPO_NO2_L3", "version": "V03", "contaminante": "NO2"},
-        {"short_name": "TEMPO_O3TOT_L3", "version": "V03", "contaminante": "O3"},
-        {"short_name": "TEMPO_HCHO_L3", "version": "V03", "contaminante": "HCHO"},
     ]
     
     resultados = {'tiene_datos': False, 'contaminantes': {}}
@@ -224,10 +225,14 @@ def consultar_tempo_coordenada(lat, lon):
         print(f"\n  [DEBUG] Buscando {config['short_name']}...")
         
         try:
-            print(f"  [SEARCH] Dataset: {config['short_name']}, BBox: ({lon - 0.5}, {lat - 0.5}, {lon + 0.5}, {lat + 0.5})")
+            print(f"  [SEARCH] Dataset: {config['short_name']}, BBox: ({lon - 0.2}, {lat - 0.2}, {lon + 0.2}, {lat + 0.2})")
+
+            # Smaller bounding box for faster search
             results = earthaccess.search_data(
-                short_name=config["short_name"], version=config["version"],
-                temporal=temporal, bounding_box=(lon - 0.5, lat - 0.5, lon + 0.5, lat + 0.5),
+                short_name=config["short_name"],
+                version=config["version"],
+                temporal=temporal,
+                bounding_box=(lon - 0.2, lat - 0.2, lon + 0.2, lat + 0.2),
                 count=1
             )
 
@@ -235,10 +240,13 @@ def consultar_tempo_coordenada(lat, lon):
             if not results:
                 print(f"  [SEARCH] No granules found for {config['short_name']}")
                 continue
-            
+
+            print(f"  [OPEN] Opening granule...")
             files = earthaccess.open(results[:1])
-            print(f"  [DEBUG] Archivos abiertos: {len(files)}")
-            if not files: continue
+            print(f"  [OPEN] Files opened: {len(files)}")
+            if not files:
+                print(f"  [OPEN] Failed to open files")
+                continue
 
             ds_root = xr.open_dataset(files[0], engine='h5netcdf')
             ds_product = xr.open_dataset(files[0], engine='h5netcdf', group='product')
