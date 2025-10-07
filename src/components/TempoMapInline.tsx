@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MapPin, Search, Navigation, Target, Loader, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 import 'leaflet/dist/leaflet.css';
-import { fetchTempoData } from '../lib/api-config';
 
 // Types for the TEMPO map interface
 interface Coordinates {
@@ -289,13 +288,13 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
     clearHeatLayers();
 
     try {
-      const response = await fetch('http://localhost:5000/api/tempo', {
+      const response = await fetch('/api/tempo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          lat, 
-          lon, 
-          num_coordenadas: 9, 
+        body: JSON.stringify({
+          lat,
+          lon,
+          num_coordenadas: 9,
           radio: radius * 1000
         })
       });

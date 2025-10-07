@@ -9,38 +9,40 @@ import math
 import os
 import traceback
 import json
+from dotenv import load_dotenv
 
-# Load credentials from vercel.json
-def load_credentials_from_vercel():
+# Load .env file for local development
+load_dotenv()
+
+# Load credentials
+def load_credentials():
+    """
+    Load credentials in priority order:
+    1. Environment variables (production/Vercel)
+    2. .env file (local development)
+    """
     try:
-        # Try to get from environment variables first (for production)
         username = os.environ.get('EARTHDATA_USERNAME')
         password = os.environ.get('EARTHDATA_PASSWORD')
-        
+
         if username and password:
+            print(f"Credentials loaded successfully for user: {username}")
             return username, password
-            
-        # If not in environment, read from vercel.json (for local development)
-        vercel_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'vercel.json')
-        with open(vercel_path, 'r') as f:
-            vercel_config = json.load(f)
-            env_vars = vercel_config.get('env', {})
-            username = env_vars.get('EARTHDATA_USERNAME', '').replace('@', '')
-            password = env_vars.get('EARTHDATA_PASSWORD', '').replace('@', '')
-            return username, password
+        else:
+            print("No credentials found. Please set EARTHDATA_USERNAME and EARTHDATA_PASSWORD")
+            return None, None
+
     except Exception as e:
         print(f"Error loading credentials: {e}")
         return None, None
 
-# Initialize authentication once (with better error handling for serverless)
+# Initialize authentication once
 auth = None
-username, password = load_credentials_from_vercel()
+username, password = load_credentials()
 if username and password:
     try:
-        # Set environment variables for earthaccess
-        os.environ['EARTHDATA_USERNAME'] = username
-        os.environ['EARTHDATA_PASSWORD'] = password
         auth = earthaccess.login(strategy="environment")
+        print("Earthdata authentication successful!")
     except Exception as e:
         print(f"Error initializing Earthdata authentication: {e}")
 
@@ -185,7 +187,7 @@ def consultar_tempo_coordenada(lat, lon):
             ds_product = xr.open_dataset(files[0], engine='h5netcdf', group='product')
             
             if 'latitude' not in ds_root.coords or 'longitude' not in ds_root.coords:
-                print("  [DEBUG] ✗ No se encontraron coordenadas 'latitude'/'longitude' en el archivo.")
+                print("  [DEBUG] [X] No se encontraron coordenadas 'latitude'/'longitude' en el archivo.")
                 ds_root.close(); ds_product.close(); continue
             
             lat_arr = ds_root['latitude'].values
@@ -215,17 +217,17 @@ def consultar_tempo_coordenada(lat, lon):
             if vars_dict and not np.isnan(vars_dict.get('troposphere', np.nan)):
                 resultados['contaminantes'][config["contaminante"]] = vars_dict
                 resultados['tiene_datos'] = True
-                print("  [DEBUG] ✓ Datos válidos guardados.")
+                print("  [DEBUG] [OK] Datos validos guardados.")
             else:
-                print("  [DEBUG] ✗ El valor principal es NaN o no hay datos.")
+                print("  [DEBUG] [X] El valor principal es NaN o no hay datos.")
 
             
             ds_root.close()
             ds_product.close()
 
         except Exception as e:
-            print(f"  [DEBUG] ‼️ ERROR al procesar {config['short_name']}: {type(e).__name__} - {e}")
-            traceback.print_exc() # Imprime el traceback completo para más detalles
+            print(f"  [DEBUG] [ERROR] al procesar {config['short_name']}: {type(e).__name__} - {e}")
+            traceback.print_exc() # Imprime el traceback completo para mas detalles
             continue
     
     return resultados
@@ -353,8 +355,8 @@ def get_tempo_data():
 
 # Local development server
 if __name__ == '__main__':
-    print("🚀 Starting local development server...")
-    print("📡 TEMPO API available at: http://localhost:5000/api/tempo")
-    print("🌍 Frontend should run on: http://localhost:5173")
+    print("Starting local development server...")
+    print("TEMPO API available at: http://localhost:5000/api/tempo")
+    print("Frontend should run on: http://localhost:5173")
     print("=" * 50)
     app.run(debug=True, port=5000, host='0.0.0.0')

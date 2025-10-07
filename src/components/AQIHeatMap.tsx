@@ -75,7 +75,7 @@ const AQIHeatMap: React.FC = () => {
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:5001/api/tempo', {
+      const response = await fetch('/api/tempo', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
