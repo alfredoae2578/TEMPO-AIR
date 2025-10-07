@@ -16,5 +16,13 @@ export default defineConfig({
     host: true, // Permite conexiones externas
     strictPort: true, // Falla si el puerto no está disponible en lugar de cambiar automáticamente
     open: false, // Don't auto-open browser (causes issues in CI/CD environments)
+    proxy: {
+      // Proxy API requests to Python server
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
 });

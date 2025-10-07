@@ -23,6 +23,9 @@ if ! command -v python &> /dev/null; then
     exit 1
 fi
 
+# Asegurarse de estar en la carpeta correcta
+cd /workspaces/TEMPO-AIR
+
 # Verificar si las dependencias de Python están instaladas
 echo "📦 Verificando dependencias de Python..."
 if ! python -c "import flask, flask_cors, earthaccess, xarray, numpy, netCDF4, h5netcdf" 2>/dev/null; then
@@ -44,7 +47,8 @@ else
     echo "⚠️  El servidor Python puede tardar en iniciarse..."
 fi
 
-cd ..
+# Regresar a la carpeta raíz del proyecto
+cd /workspaces/TEMPO-AIR
 
 echo "⚛️  Iniciando servidor Vite (Puerto 5173)..."
 npm run dev:frontend &
