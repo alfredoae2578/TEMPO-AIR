@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 # Load .env file for local development
 load_dotenv()
+# Trigger deploy
 
 # Load credentials
 def load_credentials():
