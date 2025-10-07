@@ -208,11 +208,11 @@ def consultar_tempo_coordenada(lat, lon):
         raise Exception(f"Authentication failed: {e}")
 
     # Use a fixed date range where we KNOW TEMPO has data
-    # TEMPO launched in Aug 2023, data may lag several months
-    fecha_fin = datetime(2024, 9, 30)  # Fixed date with known data
-    fecha_inicio = fecha_fin - timedelta(days=7)
+    # TEMPO launched in Aug 2023, using Feb 2024 data (more likely to be processed)
+    fecha_fin = datetime(2024, 2, 28)  # Feb 2024 - data should be available
+    fecha_inicio = datetime(2024, 2, 20)  # 8 day window
     temporal = (fecha_inicio.strftime('%Y-%m-%d'), fecha_fin.strftime('%Y-%m-%d'))
-    print(f"[TEMPORAL] Searching data from {temporal[0]} to {temporal[1]} (fixed date range)")
+    print(f"[TEMPORAL] Searching TEMPO data from {temporal[0]} to {temporal[1]} (historical data)")
 
     # Only search NO2 for speed - it's the most reliable TEMPO product
     datasets_config = [
