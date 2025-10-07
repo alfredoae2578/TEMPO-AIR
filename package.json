@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run clean && tsc -b && vite build",
+    "build:vercel": "rm -rf .next dist build .cache && tsc -b && vite build",
+    "clean": "rm -rf .next dist build .cache node_modules/.cache && find . -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true",
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write .",

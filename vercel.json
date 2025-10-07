@@ -1,6 +1,12 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
+  "buildCommand": "npm run build:vercel",
+  "outputDirectory": "dist", 
   "framework": "vite",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "functions": {
+    "api/**/*": {
+      "excludeFiles": "{.next,*.cache,node_modules,public,app,dist,build,src,components,EXTERNALPROYECTS}/**",
+      "maxDuration": 30
+    }
+  }
 }
