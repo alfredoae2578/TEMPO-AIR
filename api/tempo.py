@@ -283,76 +283,15 @@ def process_tempo_request(data):
 
     return {'resultados': resultados}, 200
 
-# Vercel serverless function handler (WSGI-compatible)
-def handler(environ, start_response):
-    """Vercel serverless function entry point (WSGI)"""
-    print("[VERCEL] Handler called")
-
-    request = Request(environ)
-
-    # Set CORS headers
-    headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Content-Type': 'application/json'
-    }
-
-    try:
-        # Handle CORS preflight
-        if request.method == 'OPTIONS':
-            response = Response('', status=200, headers=headers)
-            return response(environ, start_response)
-
-        if request.method != 'POST':
-            response = Response(
-                json.dumps({'error': 'Method not allowed'}),
-                status=405,
-                headers=headers
-            )
-            return response(environ, start_response)
-
-        # Parse request body
-        try:
-            data = request.get_json(force=True)
-            print(f"[VERCEL] Request data: {data}")
-        except Exception as e:
-            print(f"[VERCEL] Error parsing JSON: {e}")
-            response = Response(
-                json.dumps({'error': 'Invalid JSON'}),
-                status=400,
-                headers=headers
-            )
-            return response(environ, start_response)
-
-        # Process request
-        result, status_code = process_tempo_request(data)
-        print(f"[VERCEL] Response status: {status_code}")
-
-        response = Response(
-            json.dumps(result),
-            status=status_code,
-            headers=headers
-        )
-        return response(environ, start_response)
-
-    except Exception as e:
-        print(f"[VERCEL] Error in serverless handler: {e}")
-        traceback.print_exc()
-        response = Response(
-            json.dumps({'error': f'Internal server error: {str(e)}'}),
-            status=500,
-            headers=headers
-        )
-        return response(environ, start_response)
-
-# Flask app for local development
+# Flask app (works both locally and on Vercel)
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/', methods=['POST', 'OPTIONS'])
 @app.route('/api/tempo', methods=['POST', 'OPTIONS'])
 def get_tempo_data():
-    """Flask route for local development (same logic as Vercel handler)"""
+    """Flask route - Vercel calls '/', local dev calls '/api/tempo'"""
+    print("[TEMPO API] Request received")
     if request.method == 'OPTIONS':
         return '', 200
     
