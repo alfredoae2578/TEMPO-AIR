@@ -1,8 +1,9 @@
 # Core dependencies for TEMPO API
-Flask==2.3.3
+Flask==3.0.0
 Flask-CORS==4.0.0
-earthaccess==0.8.2
-numpy==1.24.4
-xarray==2023.5.0
-netCDF4==1.6.4
-h5netcdf==1.2.0
+earthaccess==0.11.0
+numpy==1.26.4
+xarray==2024.1.0
+netCDF4==1.7.1
+h5netcdf==1.3.0
+python-dotenv==1.0.0
