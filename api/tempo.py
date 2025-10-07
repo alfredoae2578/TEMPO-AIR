@@ -239,14 +239,14 @@ def consultar_tempo_coordenada(lat, lon):
         print(f"\n  [DEBUG] Buscando {config['short_name']}...")
         
         try:
-            print(f"  [SEARCH] Dataset: {config['short_name']}, BBox: ({lon - 0.2}, {lat - 0.2}, {lon + 0.2}, {lat + 0.2})")
+            print(f"  [SEARCH] Dataset: {config['short_name']}, BBox: ({lon - 0.05}, {lat - 0.05}, {lon + 0.05}, {lat + 0.05})")
 
-            # Smaller bounding box for faster search
+            # Very small bounding box for faster search and smaller files
             results = earthaccess.search_data(
                 short_name=config["short_name"],
                 version=config["version"],
                 temporal=temporal,
-                bounding_box=(lon - 0.2, lat - 0.2, lon + 0.2, lat + 0.2),
+                bounding_box=(lon - 0.05, lat - 0.05, lon + 0.05, lat + 0.05),
                 count=1
             )
 
@@ -262,8 +262,9 @@ def consultar_tempo_coordenada(lat, lon):
                 print(f"  [OPEN] Failed to open files")
                 continue
 
-            ds_root = xr.open_dataset(files[0], engine='h5netcdf')
-            ds_product = xr.open_dataset(files[0], engine='h5netcdf', group='product')
+            # Use lazy loading with chunks to avoid loading entire file into memory
+            ds_root = xr.open_dataset(files[0], engine='h5netcdf', chunks='auto')
+            ds_product = xr.open_dataset(files[0], engine='h5netcdf', group='product', chunks='auto')
             
             if 'latitude' not in ds_root.coords or 'longitude' not in ds_root.coords:
                 print("  [DEBUG] [X] No se encontraron coordenadas 'latitude'/'longitude' en el archivo.")
@@ -289,7 +290,8 @@ def consultar_tempo_coordenada(lat, lon):
                     var = ds_product[nombre_tempo]
                     selector = {'latitude': lat_idx, 'longitude': lon_idx}
                     if 'time' in var.dims: selector['time'] = 0
-                    valor = var.isel(**selector).values
+                    # Compute only the specific value we need (lazy loading optimization)
+                    valor = var.isel(**selector).compute().values
                     vars_dict[nombre_interno] = float(valor)
                     print(f"    - {nombre_interno}: {float(valor):.2e}")
 

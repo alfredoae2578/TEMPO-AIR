@@ -6,7 +6,7 @@
   "functions": {
     "api/**/*.py": {
       "excludeFiles": "{.next,*.cache,node_modules,public,app,dist,build,src,components,EXTERNALPROYECTS}/**",
-      "maxDuration": 60
+      "maxDuration": 300
     }
   },
   "rewrites": [
