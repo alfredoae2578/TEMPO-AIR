@@ -140,6 +140,16 @@
     "noDataForZone": "No TEMPO data available for this zone.",
     "outOfRange": "This zone is outside TEMPO satellite coverage range. TEMPO mainly covers North America between 20°N-50°N."
   },
+  "progress": {
+    "authenticating": "🔐 Authenticating with NASA Earthdata...",
+    "sendingRequest": "📡 Sending request to TEMPO satellite...",
+    "searchingSatelliteData": "🛰️ Searching available satellite data...",
+    "downloadingData": "⬇️ Downloading data files (~430 MB)...",
+    "processingData": "⚙️ Processing atmospheric measurements...",
+    "analyzingZones": "🔍 Analyzing zones and calculating AQI...",
+    "generatingMap": "🗺️ Generating map visualization...",
+    "complete": "✅ Query completed successfully!"
+  },
   "parameters": {
     "title": "Parameters",
     "analysisRadius": "Analysis radius (km)"

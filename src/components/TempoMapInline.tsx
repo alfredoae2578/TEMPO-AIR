@@ -64,7 +64,16 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
   const [selectedLocation, setSelectedLocation] = useState<string>('');
   const [radius, setRadius] = useState(10);
   const [heatLayers, setHeatLayers] = useState<any[]>([]);
+  const [progressLogs, setProgressLogs] = useState<string[]>([]);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const addProgressLog = (message: string) => {
+    setProgressLogs(prev => [...prev, message]);
+  };
+
+  const clearProgressLogs = () => {
+    setProgressLogs([]);
+  };
 
   const handleMapClick = useCallback((e: MapClickEvent) => {
     if (!clickModeActive || !map) return;
@@ -288,8 +297,12 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
   const consultTEMPO = async (lat: number, lon: number, name: string) => {
     setIsLoading(true);
     clearHeatLayers();
+    clearProgressLogs();
 
+    addProgressLog(t('progress.authenticating'));
+    
     try {
+      addProgressLog(t('progress.sendingRequest'));
       const response = await fetch('/api/tempo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -306,7 +319,18 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
         throw new Error(errorData.error || t('errors.queryingTempo'));
       }
 
+      addProgressLog(t('progress.searchingSatelliteData'));
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      addProgressLog(t('progress.downloadingData'));
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const data: TempoResponse = await response.json();
+      
+      addProgressLog(t('progress.processingData'));
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
+      addProgressLog(t('progress.analyzingZones'));
       setResults(data.resultados);
 
       // Calculate average AQI from results with data and pass to parent
@@ -318,6 +342,8 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
         onLocationChange({ lat, lng: lon, name, aqi: averageAQI });
       }
 
+      addProgressLog(t('progress.generatingMap'));
+      
       // ...existing code for map visualization...
       if (map) {
         await import('leaflet').then((L) => {
@@ -381,8 +407,11 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
           setHeatLayers(newLayers);
         });
       }
+      
+      addProgressLog(t('progress.complete'));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : t('common.unknownError');
+      addProgressLog(`❌ ${t('common.error')}: ${errorMessage}`);
       alert(`${t('common.error')}: ${errorMessage}`);
     } finally {
       setIsLoading(false);
@@ -547,10 +576,38 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
 
           {isLoading && (
             <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 relative z-0">
-              <div className="flex items-center justify-center py-4">
+              <div className="flex items-center justify-center py-4 mb-4">
                 <Loader className="w-6 h-6 text-[#98D8C8] animate-spin" />
                 <span className="ml-3 text-white font-medium">{t('common.loading')}</span>
               </div>
+              
+              {/* Progress Log */}
+              {progressLogs.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30 max-h-48 overflow-y-auto"
+                >
+                  <div className="space-y-2">
+                    {progressLogs.map((log, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-start gap-2 text-sm"
+                      >
+                        <span className="text-[#98D8C8] mt-0.5">
+                          {index === progressLogs.length - 1 && !log.includes('❌') ? '⏳' : '✓'}
+                        </span>
+                        <span className={`${log.includes('❌') ? 'text-red-400' : 'text-[#B0E0E6]'} flex-1`}>
+                          {log}
+                        </span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
             </div>
           )}
         </div>

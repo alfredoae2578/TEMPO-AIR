@@ -140,6 +140,16 @@
     "noDataForZone": "Aucune donnée TEMPO disponible pour cette zone.",
     "outOfRange": "Cette zone se trouve en dehors de la zone de couverture du satellite TEMPO. TEMPO couvre principalement l'Amérique du Nord entre 20°N-50°N."
   },
+  "progress": {
+    "authenticating": "🔐 Authentification avec NASA Earthdata...",
+    "sendingRequest": "📡 Envoi de la requête au satellite TEMPO...",
+    "searchingSatelliteData": "🛰️ Recherche de données satellitaires disponibles...",
+    "downloadingData": "⬇️ Téléchargement des fichiers de données (~430 Mo)...",
+    "processingData": "⚙️ Traitement des mesures atmosphériques...",
+    "analyzingZones": "🔍 Analyse des zones et calcul de l'IQA...",
+    "generatingMap": "🗺️ Génération de la visualisation cartographique...",
+    "complete": "✅ Requête terminée avec succès !"
+  },
   "parameters": {
     "title": "Paramètres",
     "analysisRadius": "Rayon d'analyse (km)"
