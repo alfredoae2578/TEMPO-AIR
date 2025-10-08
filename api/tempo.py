@@ -270,12 +270,16 @@ def consultar_tempo_coordenada(lat, lon):
                 print("  [DEBUG] [X] No se encontraron coordenadas 'latitude'/'longitude' en el archivo.")
                 ds_root.close(); ds_product.close(); continue
             
-            lat_arr = ds_root['latitude'].values
-            lon_arr = ds_root['longitude'].values
-            lat_idx = np.abs(lat_arr - lat).argmin()
-            lon_idx = np.abs(lon_arr - lon).argmin()
+            # OPTIMIZED: Use xarray's built-in selection instead of loading entire arrays
+            # This uses lazy evaluation and only loads the necessary data
+            lat_idx = ds_root['latitude'].sel(latitude=lat, method='nearest').latitude
+            lon_idx = ds_root['longitude'].sel(longitude=lon, method='nearest').longitude
             
-            print(f"  [DEBUG] Coordenada de píxel más cercano: {lat_arr[lat_idx]:.4f}, {lon_arr[lon_idx]:.4f}")
+            # Get actual coordinate values for logging (minimal computation)
+            lat_actual = float(lat_idx.values)
+            lon_actual = float(lon_idx.values)
+            
+            print(f"  [DEBUG] Coordenada de píxel más cercano: {lat_actual:.4f}, {lon_actual:.4f}")
             
             vars_dict = {}
             variables_a_extraer = {
@@ -288,10 +292,12 @@ def consultar_tempo_coordenada(lat, lon):
             for nombre_interno, nombre_tempo in variables_a_extraer.items():
                 if nombre_tempo in ds_product.data_vars:
                     var = ds_product[nombre_tempo]
-                    selector = {'latitude': lat_idx, 'longitude': lon_idx}
-                    if 'time' in var.dims: selector['time'] = 0
+                    # Use .sel() with method='nearest' for efficient coordinate-based selection
+                    selector = {'latitude': lat, 'longitude': lon}
+                    if 'time' in var.dims: 
+                        selector['time'] = var.time[0]  # Select first time if available
                     # Compute only the specific value we need (lazy loading optimization)
-                    valor = var.isel(**selector).compute().values
+                    valor = var.sel(**selector, method='nearest').compute().values
                     vars_dict[nombre_interno] = float(valor)
                     print(f"    - {nombre_interno}: {float(valor):.2e}")
 
