@@ -23,6 +23,7 @@ mediaQuery.addEventListener('change', forceLightMode);
 
 import { createRoot } from 'react-dom/client';
 import './index.css';
+import './i18n/config'; // Initialize i18n
 import App from './App.tsx';
 import { RootDnd } from './dnd-kit/RootDnd.tsx';
 import { DragStateProvider } from './dnd-kit/DragStateContext.tsx';

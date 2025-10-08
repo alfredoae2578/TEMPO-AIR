@@ -1,0 +1,175 @@
+{
+  "common": {
+    "appName": "NASA TEMPO",
+    "appSubtitle": "Monitor de Calidad del Aire",
+    "loading": "Consultando datos TEMPO...",
+    "error": "Error",
+    "unknownError": "Error desconocido",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar"
+  },
+  "navigation": {
+    "overview": "Resumen",
+    "forecast": "Pronóstico",
+    "map": "Mapa",
+    "globalMap": "Mapa Global",
+    "alerts": "Alertas",
+    "notifications": "Notificaciones"
+  },
+  "aqi": {
+    "title": "Índice de Calidad del Aire",
+    "satelliteIndex": "Índice de Calidad del Aire Satelital",
+    "scale": "Escala AQI Satelital",
+    "current": "ICA Actual",
+    "detailedAnalysis": "Análisis Detallado",
+    "levels": {
+      "good": "Bueno",
+      "moderate": "Moderado",
+      "unhealthySensitive": "Poco saludable para grupos sensibles",
+      "unhealthySensitiveShort": "Poco saludable (sensibles)",
+      "unhealthy": "Poco saludable",
+      "veryUnhealthy": "Muy poco saludable",
+      "hazardous": "Peligroso"
+    },
+    "ranges": {
+      "good": "0-50",
+      "moderate": "51-100",
+      "unhealthySensitive": "101-150",
+      "unhealthy": "151-200",
+      "veryUnhealthy": "201-300",
+      "hazardous": "300+"
+    },
+    "description": "La calidad del aire es aceptable para la mayoria de las personas. Los grupos sensibles deben considerar reducir la actividad prolongada al aire libre."
+  },
+  "location": {
+    "title": "Ubicación",
+    "current": "Ubicación Actual",
+    "myLocation": "Mi Ubicación",
+    "searchPlaceholder": "Buscar ciudad o lugar...",
+    "clickOnMap": "Clic en Mapa",
+    "coordinates": "Coordenadas",
+    "pinPlaced": "Pin colocado en:",
+    "temporaryPin": "Pin temporal",
+    "movePin": "Haz clic en otro lugar para moverlo",
+    "queryLocation": "Ubicación consulta",
+    "selected": "Ubicación seleccionada:"
+  },
+  "pollutants": {
+    "title": "Niveles de Contaminantes",
+    "detected": "Contaminantes Detectados",
+    "troposphere": "Troposfera",
+    "stratosphere": "Estratosfera",
+    "uncertainty": "Incertidumbre",
+    "quality": "Calidad",
+    "qualityGood": "Buena",
+    "qualityDegraded": "Degradada"
+  },
+  "weather": {
+    "title": "Condiciones Climaticas",
+    "temperature": "Temperatura",
+    "humidity": "Humedad",
+    "wind": "Viento",
+    "windSpeed": "km/h"
+  },
+  "atmospheric": {
+    "title": "Índices Atmosféricos",
+    "aerosolIndex": "Aerosol Index",
+    "aerosolDescription": "Medición de aerosoles atmosféricos correlacionada con la calidad del aire. Valores más altos indican mayor presencia de partículas en suspensión.",
+    "uvIndex": "UV Index",
+    "uvDescription": "Índice de radiación ultravioleta. Valores 0-2: Bajo, 3-5: Moderado, 6-7: Alto, 8-10: Muy Alto, 11+: Extremo. Use protección solar cuando sea necesario."
+  },
+  "forecast": {
+    "title": "Pronóstico",
+    "for": "Pronóstico para {{location}}",
+    "24hours": "Pronóstico de 24 Horas",
+    "pollutants": "Pronóstico de Contaminantes",
+    "hourly": "Desglose por Hora",
+    "7dayTrend": "Tendencia de 7 Dias"
+  },
+  "alerts": {
+    "title": "Alertas",
+    "active": "Alertas Activas",
+    "none": "No hay alertas activas en este momento",
+    "healthRecommendations": "Recomendaciones de Salud",
+    "generalPopulation": "Poblacion General",
+    "generalAdvice": "Las actividades al aire libre son aceptables. Disfrute de su rutina habitual.",
+    "sensitiveGroups": "Grupos Sensibles",
+    "sensitiveAdvice": "Considere reducir el ejercicio prolongado o intenso al aire libre.",
+    "childrenElderly": "Niños y Adultos Mayores",
+    "childrenElderlyAdvice": "Tome descansos durante las actividades al aire libre si experimenta sintomas.",
+    "critical": "Alerta crítica: La calidad del aire en {{location}} ha alcanzado niveles peligrosos. Se recomienda permanecer en interiores.",
+    "warning": "La calidad del aire en {{location}} puede afectar a grupos sensibles. Considere reducir actividades al aire libre.",
+    "moderate": "Calidad del aire moderada en {{location}}. Los grupos sensibles deben considerar limitar la exposición prolongada.",
+    "good": "La calidad del aire en {{location}} es buena. Es un buen momento para actividades al aire libre.",
+    "dataUpdate": "Los datos del satélite NASA TEMPO se han actualizado con las últimas mediciones para {{location}}.",
+    "healthWarning": "Grupos sensibles (niños, adultos mayores, personas con problemas respiratorios) deben evitar ejercicio intenso al aire libre."
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "settings": "Configuracion de Notificaciones",
+    "airQualityAlerts": "Alertas de Calidad del Aire",
+    "airQualityAlertsDesc": "Recibe notificaciones cuando cambia el ICA",
+    "dailySummary": "Resumen Diario",
+    "dailySummaryDesc": "Recibe informes diarios",
+    "forecastUpdates": "Actualizaciones de Pronostico",
+    "forecastUpdatesDesc": "Notificaciones de pronostico",
+    "dailySummaryText": "Recibirás un resumen diario de la calidad del aire y pronóstico. Esta opción está activada."
+  },
+  "map": {
+    "interactive": "Mapa Interactivo TEMPO",
+    "heatMap": "Mapa de Calidad del Aire TEMPO",
+    "hideHeatmap": "Ocultar Heatmap",
+    "showHeatmap": "Mostrar Heatmap",
+    "hide3DEarth": "Ocultar Tierra 3D",
+    "show3DEarth": "Mostrar Tierra 3D",
+    "clickToSelect": "Haz clic en el mapa para seleccionar ubicación...",
+    "zone": "Zona {{index}}",
+    "realtimeData": "Datos satelitales en tiempo real - NASA TEMPO",
+    "realtimeMonitoring": "Monitoreo de calidad del aire en tiempo real"
+  },
+  "results": {
+    "title": "Resultados",
+    "zonesAnalyzed": "Zonas analizadas: {{withData}} con datos / {{withoutData}} sin datos",
+    "noData": "Sin datos",
+    "noDataAvailable": "Sin datos disponibles",
+    "noDataForZone": "No hay datos TEMPO disponibles para esta zona.",
+    "outOfRange": "Esta zona se encuentra fuera del rango de cobertura del satélite TEMPO. TEMPO cubre principalmente América del Norte entre 20°N-50°N."
+  },
+  "parameters": {
+    "title": "Parámetros",
+    "analysisRadius": "Radio de análisis (km)"
+  },
+  "errors": {
+    "queryTempo": "Error al consultar TEMPO",
+    "queryingTempo": "Error consultando datos TEMPO",
+    "location": "Error al obtener ubicación",
+    "permissionDenied": "Permiso denegado",
+    "locationUnavailable": "Ubicación no disponible",
+    "timeout": "Tiempo agotado",
+    "geolocationNotSupported": "Tu navegador no soporta geolocalización"
+  },
+  "disclaimer": {
+    "note": "Nota:",
+    "text": "Índice experimental basado en datos satelitales TEMPO. No sustituye mediciones oficiales terrestres. Solo para propósitos educativos/demostrativos."
+  },
+  "time": {
+    "am": "AM",
+    "pm": "PM",
+    "now": "Ahora mismo",
+    "minutesAgo": "Hace {{count}} minuto",
+    "minutesAgo_other": "Hace {{count}} minutos",
+    "hoursAgo": "Hace {{count}} hora",
+    "hoursAgo_other": "Hace {{count}} horas",
+    "daysAgo": "Hace {{count}} día",
+    "daysAgo_other": "Hace {{count}} días"
+  },
+  "weekdays": {
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mié",
+    "thu": "Jue",
+    "fri": "Vie",
+    "sat": "Sáb",
+    "sun": "Dom"
+  }
+}

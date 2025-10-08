@@ -1,0 +1,175 @@
+{
+  "common": {
+    "appName": "NASA TEMPO",
+    "appSubtitle": "Air Quality Monitor",
+    "loading": "Querying TEMPO data...",
+    "error": "Error",
+    "unknownError": "Unknown error",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "navigation": {
+    "overview": "Overview",
+    "forecast": "Forecast",
+    "map": "Map",
+    "globalMap": "Global Map",
+    "alerts": "Alerts",
+    "notifications": "Notifications"
+  },
+  "aqi": {
+    "title": "Air Quality Index",
+    "satelliteIndex": "Satellite Air Quality Index",
+    "scale": "Satellite AQI Scale",
+    "current": "Current AQI",
+    "detailedAnalysis": "Detailed Analysis",
+    "levels": {
+      "good": "Good",
+      "moderate": "Moderate",
+      "unhealthySensitive": "Unhealthy for Sensitive Groups",
+      "unhealthySensitiveShort": "Unhealthy (Sensitive)",
+      "unhealthy": "Unhealthy",
+      "veryUnhealthy": "Very Unhealthy",
+      "hazardous": "Hazardous"
+    },
+    "ranges": {
+      "good": "0-50",
+      "moderate": "51-100",
+      "unhealthySensitive": "101-150",
+      "unhealthy": "151-200",
+      "veryUnhealthy": "201-300",
+      "hazardous": "300+"
+    },
+    "description": "Air quality is acceptable for most people. Sensitive groups should consider reducing prolonged outdoor activity."
+  },
+  "location": {
+    "title": "Location",
+    "current": "Current Location",
+    "myLocation": "My Location",
+    "searchPlaceholder": "Search city or place...",
+    "clickOnMap": "Click on Map",
+    "coordinates": "Coordinates",
+    "pinPlaced": "Pin placed at:",
+    "temporaryPin": "Temporary pin",
+    "movePin": "Click elsewhere to move it",
+    "queryLocation": "Query location",
+    "selected": "Selected location:"
+  },
+  "pollutants": {
+    "title": "Pollutant Levels",
+    "detected": "Detected Pollutants",
+    "troposphere": "Troposphere",
+    "stratosphere": "Stratosphere",
+    "uncertainty": "Uncertainty",
+    "quality": "Quality",
+    "qualityGood": "Good",
+    "qualityDegraded": "Degraded"
+  },
+  "weather": {
+    "title": "Weather Conditions",
+    "temperature": "Temperature",
+    "humidity": "Humidity",
+    "wind": "Wind",
+    "windSpeed": "km/h"
+  },
+  "atmospheric": {
+    "title": "Atmospheric Indices",
+    "aerosolIndex": "Aerosol Index",
+    "aerosolDescription": "Measurement of atmospheric aerosols correlated with air quality. Higher values indicate greater presence of suspended particles.",
+    "uvIndex": "UV Index",
+    "uvDescription": "Ultraviolet radiation index. Values 0-2: Low, 3-5: Moderate, 6-7: High, 8-10: Very High, 11+: Extreme. Use sun protection when necessary."
+  },
+  "forecast": {
+    "title": "Forecast",
+    "for": "Forecast for {{location}}",
+    "24hours": "24-Hour Forecast",
+    "pollutants": "Pollutant Forecast",
+    "hourly": "Hourly Breakdown",
+    "7dayTrend": "7-Day Trend"
+  },
+  "alerts": {
+    "title": "Alerts",
+    "active": "Active Alerts",
+    "none": "No active alerts at this time",
+    "healthRecommendations": "Health Recommendations",
+    "generalPopulation": "General Population",
+    "generalAdvice": "Outdoor activities are acceptable. Enjoy your usual routine.",
+    "sensitiveGroups": "Sensitive Groups",
+    "sensitiveAdvice": "Consider reducing prolonged or intense outdoor exercise.",
+    "childrenElderly": "Children and Elderly",
+    "childrenElderlyAdvice": "Take breaks during outdoor activities if you experience symptoms.",
+    "critical": "Critical alert: Air quality in {{location}} has reached hazardous levels. It is recommended to stay indoors.",
+    "warning": "Air quality in {{location}} may affect sensitive groups. Consider reducing outdoor activities.",
+    "moderate": "Moderate air quality in {{location}}. Sensitive groups should consider limiting prolonged exposure.",
+    "good": "Air quality in {{location}} is good. It's a good time for outdoor activities.",
+    "dataUpdate": "NASA TEMPO satellite data has been updated with the latest measurements for {{location}}.",
+    "healthWarning": "Sensitive groups (children, elderly, people with respiratory problems) should avoid intense outdoor exercise."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "settings": "Notification Settings",
+    "airQualityAlerts": "Air Quality Alerts",
+    "airQualityAlertsDesc": "Receive notifications when AQI changes",
+    "dailySummary": "Daily Summary",
+    "dailySummaryDesc": "Receive daily reports",
+    "forecastUpdates": "Forecast Updates",
+    "forecastUpdatesDesc": "Forecast notifications",
+    "dailySummaryText": "You will receive a daily summary of air quality and forecast. This option is enabled."
+  },
+  "map": {
+    "interactive": "TEMPO Interactive Map",
+    "heatMap": "TEMPO Air Quality Map",
+    "hideHeatmap": "Hide Heatmap",
+    "showHeatmap": "Show Heatmap",
+    "hide3DEarth": "Hide 3D Earth",
+    "show3DEarth": "Show 3D Earth",
+    "clickToSelect": "Click on the map to select location...",
+    "zone": "Zone {{index}}",
+    "realtimeData": "Real-time satellite data - NASA TEMPO",
+    "realtimeMonitoring": "Real-time air quality monitoring"
+  },
+  "results": {
+    "title": "Results",
+    "zonesAnalyzed": "Zones analyzed: {{withData}} with data / {{withoutData}} without data",
+    "noData": "No data",
+    "noDataAvailable": "No data available",
+    "noDataForZone": "No TEMPO data available for this zone.",
+    "outOfRange": "This zone is outside TEMPO satellite coverage range. TEMPO mainly covers North America between 20°N-50°N."
+  },
+  "parameters": {
+    "title": "Parameters",
+    "analysisRadius": "Analysis radius (km)"
+  },
+  "errors": {
+    "queryTempo": "Error querying TEMPO",
+    "queryingTempo": "Error querying TEMPO data",
+    "location": "Error getting location",
+    "permissionDenied": "Permission denied",
+    "locationUnavailable": "Location unavailable",
+    "timeout": "Timeout",
+    "geolocationNotSupported": "Your browser does not support geolocation"
+  },
+  "disclaimer": {
+    "note": "Note:",
+    "text": "Experimental index based on TEMPO satellite data. Does not replace official ground measurements. For educational/demonstration purposes only."
+  },
+  "time": {
+    "am": "AM",
+    "pm": "PM",
+    "now": "Right now",
+    "minutesAgo": "{{count}} minute ago",
+    "minutesAgo_other": "{{count}} minutes ago",
+    "hoursAgo": "{{count}} hour ago",
+    "hoursAgo_other": "{{count}} hours ago",
+    "daysAgo": "{{count}} day ago",
+    "daysAgo_other": "{{count}} days ago"
+  },
+  "weekdays": {
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun"
+  }
+}

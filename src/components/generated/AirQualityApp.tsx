@@ -4,6 +4,7 @@ import { AlertCircle, Wind, Droplets, Sun, Cloud, Activity, MapPin, Bell, Trendi
 import { motion, AnimatePresence } from 'framer-motion';
 import EarthBackground from '../earth3d/EarthBackground';
 import TempoMapInline from '../TempoMapInline';
+import { LanguageSelector } from '../LanguageSelector';
 
 type AirQualityLevel = 'good' | 'moderate' | 'unhealthy-sensitive' | 'unhealthy' | 'very-unhealthy' | 'hazardous';
 type PollutantData = {
@@ -719,10 +720,13 @@ export const AirQualityApp = () => {
               </p>
             </div>
           </div>
-          <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 hover:bg-[#87CEEB]/10 rounded-full transition-colors">
-            <Bell className="w-5 h-5 text-white" />
-            {filteredAlerts.length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <LanguageSelector />
+            <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 hover:bg-[#87CEEB]/10 rounded-full transition-colors">
+              <Bell className="w-5 h-5 text-white" />
+              {filteredAlerts.length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-[#98D8C8] rounded-full animate-pulse shadow-lg shadow-[#98D8C8]/50" />}
+            </button>
+          </div>
         </header>
 
         {/* Men� desplegable de notificaciones */}

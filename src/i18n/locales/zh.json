@@ -1,0 +1,175 @@
+{
+  "common": {
+    "appName": "NASA TEMPO",
+    "appSubtitle": "空气质量监测",
+    "loading": "正在查询TEMPO数据...",
+    "error": "错误",
+    "unknownError": "未知错误",
+    "confirm": "确认",
+    "cancel": "取消"
+  },
+  "navigation": {
+    "overview": "概览",
+    "forecast": "预报",
+    "map": "地图",
+    "globalMap": "全球地图",
+    "alerts": "警报",
+    "notifications": "通知"
+  },
+  "aqi": {
+    "title": "空气质量指数",
+    "satelliteIndex": "卫星空气质量指数",
+    "scale": "卫星AQI等级",
+    "current": "当前AQI",
+    "detailedAnalysis": "详细分析",
+    "levels": {
+      "good": "良好",
+      "moderate": "中等",
+      "unhealthySensitive": "对敏感人群不健康",
+      "unhealthySensitiveShort": "不健康(敏感)",
+      "unhealthy": "不健康",
+      "veryUnhealthy": "非常不健康",
+      "hazardous": "危险"
+    },
+    "ranges": {
+      "good": "0-50",
+      "moderate": "51-100",
+      "unhealthySensitive": "101-150",
+      "unhealthy": "151-200",
+      "veryUnhealthy": "201-300",
+      "hazardous": "300+"
+    },
+    "description": "对大多数人来说,空气质量是可以接受的。敏感人群应考虑减少长时间的户外活动。"
+  },
+  "location": {
+    "title": "位置",
+    "current": "当前位置",
+    "myLocation": "我的位置",
+    "searchPlaceholder": "搜索城市或地点...",
+    "clickOnMap": "点击地图",
+    "coordinates": "坐标",
+    "pinPlaced": "标记已放置于:",
+    "temporaryPin": "临时标记",
+    "movePin": "点击其他位置移动",
+    "queryLocation": "查询位置",
+    "selected": "已选位置:"
+  },
+  "pollutants": {
+    "title": "污染物水平",
+    "detected": "检测到的污染物",
+    "troposphere": "对流层",
+    "stratosphere": "平流层",
+    "uncertainty": "不确定性",
+    "quality": "质量",
+    "qualityGood": "良好",
+    "qualityDegraded": "降级"
+  },
+  "weather": {
+    "title": "天气状况",
+    "temperature": "温度",
+    "humidity": "湿度",
+    "wind": "风",
+    "windSpeed": "公里/小时"
+  },
+  "atmospheric": {
+    "title": "大气指数",
+    "aerosolIndex": "气溶胶指数",
+    "aerosolDescription": "与空气质量相关的大气气溶胶测量。较高的值表明悬浮颗粒物的存在更多。",
+    "uvIndex": "紫外线指数",
+    "uvDescription": "紫外线辐射指数。数值 0-2: 低, 3-5: 中等, 6-7: 高, 8-10: 非常高, 11+: 极高。必要时使用防晒保护。"
+  },
+  "forecast": {
+    "title": "预报",
+    "for": "{{location}}的预报",
+    "24hours": "24小时预报",
+    "pollutants": "污染物预报",
+    "hourly": "每小时分解",
+    "7dayTrend": "7天趋势"
+  },
+  "alerts": {
+    "title": "警报",
+    "active": "活动警报",
+    "none": "目前没有活动警报",
+    "healthRecommendations": "健康建议",
+    "generalPopulation": "一般人群",
+    "generalAdvice": "户外活动是可以接受的。享受您的正常日常活动。",
+    "sensitiveGroups": "敏感人群",
+    "sensitiveAdvice": "考虑减少长时间或剧烈的户外运动。",
+    "childrenElderly": "儿童和老年人",
+    "childrenElderlyAdvice": "如果出现症状,在户外活动时休息一下。",
+    "critical": "严重警报: {{location}}的空气质量已达到危险水平。建议留在室内。",
+    "warning": "{{location}}的空气质量可能会影响敏感人群。考虑减少户外活动。",
+    "moderate": "{{location}}空气质量中等。敏感人群应考虑限制长时间暴露。",
+    "good": "{{location}}的空气质量良好。现在是进行户外活动的好时机。",
+    "dataUpdate": "NASA TEMPO卫星数据已更新{{location}}的最新测量数据。",
+    "healthWarning": "敏感人群(儿童、老年人、有呼吸问题的人)应避免剧烈的户外运动。"
+  },
+  "notifications": {
+    "title": "通知",
+    "settings": "通知设置",
+    "airQualityAlerts": "空气质量警报",
+    "airQualityAlertsDesc": "当AQI变化时接收通知",
+    "dailySummary": "每日摘要",
+    "dailySummaryDesc": "接收每日报告",
+    "forecastUpdates": "预报更新",
+    "forecastUpdatesDesc": "预报通知",
+    "dailySummaryText": "您将收到每日空气质量和预报摘要。此选项已启用。"
+  },
+  "map": {
+    "interactive": "TEMPO互动地图",
+    "heatMap": "TEMPO空气质量地图",
+    "hideHeatmap": "隐藏热图",
+    "showHeatmap": "显示热图",
+    "hide3DEarth": "隐藏3D地球",
+    "show3DEarth": "显示3D地球",
+    "clickToSelect": "点击地图选择位置...",
+    "zone": "区域 {{index}}",
+    "realtimeData": "实时卫星数据 - NASA TEMPO",
+    "realtimeMonitoring": "实时空气质量监测"
+  },
+  "results": {
+    "title": "结果",
+    "zonesAnalyzed": "已分析区域: {{withData}}个有数据 / {{withoutData}}个无数据",
+    "noData": "无数据",
+    "noDataAvailable": "无可用数据",
+    "noDataForZone": "此区域没有可用的TEMPO数据。",
+    "outOfRange": "此区域超出TEMPO卫星覆盖范围。TEMPO主要覆盖北纬20°-50°的北美地区。"
+  },
+  "parameters": {
+    "title": "参数",
+    "analysisRadius": "分析半径(公里)"
+  },
+  "errors": {
+    "queryTempo": "查询TEMPO时出错",
+    "queryingTempo": "查询TEMPO数据时出错",
+    "location": "获取位置时出错",
+    "permissionDenied": "权限被拒绝",
+    "locationUnavailable": "位置不可用",
+    "timeout": "超时",
+    "geolocationNotSupported": "您的浏览器不支持地理定位"
+  },
+  "disclaimer": {
+    "note": "注意:",
+    "text": "基于TEMPO卫星数据的实验性指数。不能替代官方地面测量。仅用于教育/演示目的。"
+  },
+  "time": {
+    "am": "上午",
+    "pm": "下午",
+    "now": "现在",
+    "minutesAgo": "{{count}}分钟前",
+    "minutesAgo_other": "{{count}}分钟前",
+    "hoursAgo": "{{count}}小时前",
+    "hoursAgo_other": "{{count}}小时前",
+    "daysAgo": "{{count}}天前",
+    "daysAgo_other": "{{count}}天前"
+  },
+  "weekdays": {
+    "mon": "周一",
+    "tue": "周二",
+    "wed": "周三",
+    "thu": "周四",
+    "fri": "周五",
+    "sat": "周六",
+    "sun": "周日"
+  }
+}
