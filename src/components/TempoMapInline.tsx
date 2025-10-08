@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MapPin, Search, Navigation, Target, Loader, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import 'leaflet/dist/leaflet.css';
 
 // Types for the TEMPO map interface
@@ -49,6 +50,7 @@ interface TempoMapInlineProps {
 }
 
 const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => {
+  const { t } = useTranslation();
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -87,11 +89,11 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
 
       const newPin = L.marker([lat, lon], { icon: temporaryIcon })
         .addTo(map)
-        .bindPopup(`<b>📍 Pin temporal</b><br>${lat.toFixed(6)}, ${lon.toFixed(6)}<br><small>Haz clic en otro lugar para moverlo</small>`);
+        .bindPopup(`<b>📍 ${t('location.temporaryPin')}</b><br>${lat.toFixed(6)}, ${lon.toFixed(6)}<br><small>${t('location.clickToMove')}</small>`);
 
       setTemporaryPin(newPin);
     });
-  }, [clickModeActive, map, temporaryPin]);
+  }, [clickModeActive, map, temporaryPin, t]);
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -179,7 +181,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
     setIsLoading(true);
 
     if (!navigator.geolocation) {
-      alert('Tu navegador no soporta geolocalización');
+      alert(t('errors.geolocationNotSupported'));
       setIsLoading(false);
       return;
     }
@@ -215,11 +217,11 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
       
       await consultTEMPO(lat, lon, name);
     } catch (error) {
-      let message = 'Error al obtener ubicación';
+      let message = t('errors.gettingLocation');
       if (error instanceof GeolocationPositionError) {
-        if (error.code === 1) message = 'Permiso denegado';
-        else if (error.code === 2) message = 'Ubicación no disponible';
-        else if (error.code === 3) message = 'Tiempo agotado';
+        if (error.code === 1) message = t('errors.permissionDenied');
+        else if (error.code === 2) message = t('errors.locationUnavailable');
+        else if (error.code === 3) message = t('errors.timeout');
       }
 
       alert(message);
@@ -300,8 +302,8 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Error al consultar TEMPO' }));
-        throw new Error(errorData.error || 'Error al consultar TEMPO');
+        const errorData = await response.json().catch(() => ({ error: t('errors.queryingTempo') }));
+        throw new Error(errorData.error || t('errors.queryingTempo'));
       }
 
       const data: TempoResponse = await response.json();
@@ -331,7 +333,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
           
           const centralMarker = L.marker([lat, lon], { icon: centralIcon })
             .addTo(map)
-            .bindPopup(`<b>📍 Ubicación consulta</b><br>${name}<br>${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+            .bindPopup(`<b>📍 ${t('location.queryLocation')}</b><br>${name}<br>${lat.toFixed(6)}, ${lon.toFixed(6)}`);
           newLayers.push(centralMarker);
 
           // Heat zones
@@ -347,7 +349,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
               weight: 2
             }).addTo(map);
 
-            let detailsHTML = `<b>🌡️ Zona ${index + 1}</b><br>`;
+            let detailsHTML = `<b>🌡️ ${t('results.zone')} ${index + 1}</b><br>`;
             detailsHTML += `<div style="background:${item.color};color:white;padding:2px 8px;border-radius:3px;display:inline-block;font-weight:bold;">${item.aqi_satelital}</div><br>`;
             detailsHTML += `<b>${item.categoria}</b><br><br>`;
             
@@ -380,8 +382,8 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
         });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      alert(`Error: ${errorMessage}`);
+      const errorMessage = error instanceof Error ? error.message : t('common.unknownError');
+      alert(`${t('common.error')}: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -400,7 +402,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
           <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 relative z-20">
             <h3 className="text-white font-semibold text-lg flex items-center gap-2 mb-4">
               <Navigation className="w-5 h-5 text-[#98D8C8]" />
-              Ubicación
+              {t('location.title')}
             </h3>
             <div className="space-y-4">
               <div className="flex gap-3">
@@ -410,7 +412,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-[#98D8C8] to-[#98D8C8]/80 hover:from-[#98D8C8]/90 hover:to-[#98D8C8]/70 disabled:opacity-50 text-[#1a3a52] rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#98D8C8]/30 border border-[#98D8C8]/20"
                 >
                   <Navigation className="w-4 h-4" />
-                  Mi Ubicación
+                  {t('location.myLocation')}
                 </button>
                 <button
                   onClick={activateClickMode}
@@ -421,7 +423,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
                   }`}
                 >
                   <Target className="w-4 h-4" />
-                  Clic en Mapa
+                  {t('location.clickOnMap')}
                 </button>
               </div>
 
@@ -434,7 +436,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
                     value={searchQuery}
                     onChange={(e) => handleSearchInput(e.target.value)}
                     onFocus={() => setShowSuggestions(suggestions.length > 0)}
-                    placeholder="Buscar ciudad o lugar..."
+                    placeholder={t('location.searchPlaceholder')}
                     className="w-full pl-12 pr-4 py-3 bg-[#87CEEB]/10 backdrop-blur border-2 border-[#87CEEB]/30 rounded-xl text-white placeholder-[#B0E0E6] focus:outline-none focus:border-[#87CEEB] focus:bg-[#87CEEB]/15 transition-all duration-200 shadow-inner relative z-10"
                   />
                 </div>
@@ -460,10 +462,10 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
           <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 relative z-0">
             <h3 className="text-white font-semibold text-lg flex items-center gap-2 mb-4">
               <Activity className="w-5 h-5 text-[#98D8C8]" />
-              Parámetros
+              {t('parameters.title')}
             </h3>
             <div className="bg-[#87CEEB]/10 backdrop-blur rounded-xl p-4 border border-[#87CEEB]/30">
-              <label className="block text-sm font-medium text-[#B0E0E6] mb-2">Radio de análisis (km)</label>
+              <label className="block text-sm font-medium text-[#B0E0E6] mb-2">{t('parameters.analysisRadius')}</label>
               <input
                 type="number"
                 value={radius}
@@ -479,7 +481,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
           {temporaryCoords && (
             <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 relative z-0">
               <div className="text-sm text-white font-medium mb-3">
-                📍 Pin colocado en:<br/>
+                📍 {t('location.pinPlacedAt')}<br/>
                 <span className="text-[#98D8C8] font-mono">
                   {temporaryCoords.lat.toFixed(6)}, {temporaryCoords.lon.toFixed(6)}
                 </span>
@@ -489,13 +491,13 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
                   onClick={confirmTemporaryLocation}
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-[#98D8C8] to-[#98D8C8]/80 hover:from-[#98D8C8]/90 hover:to-[#98D8C8]/70 text-[#1a3a52] rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#98D8C8]/30 border border-[#98D8C8]/20"
                 >
-                  ✓ Confirmar
+                  ✓ {t('common.confirm')}
                 </button>
                 <button
                   onClick={cancelClickMode}
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#E67E22]/90 hover:to-[#D35400]/90 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-[#E67E22]/30 border border-[#E67E22]/20"
                 >
-                  ✗ Cancelar
+                  ✗ {t('common.cancel')}
                 </button>
               </div>
             </div>
@@ -506,7 +508,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
             <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 relative z-0">
               <h3 className="text-white font-semibold text-lg flex items-center gap-2 mb-4">
                 <Activity className="w-5 h-5 text-[#98D8C8]" />
-                Resultados
+                {t('results.title')}
               </h3>
               <div className="space-y-3 max-h-64 overflow-y-auto">
                 {selectedLocation && (
@@ -515,7 +517,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
                   </div>
                 )}
                 <div className="text-sm text-[#B0E0E6] bg-[#87CEEB]/10 backdrop-blur rounded-lg p-3 border border-[#87CEEB]/30">
-                  📊 Zonas analizadas: <span className="text-[#98D8C8] font-semibold">{results.filter(r => r.tiene_datos).length} con datos</span> / <span className="text-[#E67E22] font-semibold">{results.filter(r => !r.tiene_datos).length} sin datos</span>
+                  📊 {t('results.zonesAnalyzed')}: <span className="text-[#98D8C8] font-semibold">{results.filter(r => r.tiene_datos).length} {t('results.withData')}</span> / <span className="text-[#E67E22] font-semibold">{results.filter(r => !r.tiene_datos).length} {t('results.withoutData')}</span>
                 </div>
                 {results.filter(r => r.tiene_datos).map((result, index) => (
                   <div
@@ -528,7 +530,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
                     }}
                   >
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-white font-semibold">Zona {index + 1}</span>
+                      <span className="text-white font-semibold">{t('results.zone')} {index + 1}</span>
                       <span
                         className="px-3 py-1 rounded-lg text-white text-sm font-bold shadow-lg"
                         style={{ backgroundColor: result.color }}
@@ -547,7 +549,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
             <div className="bg-gradient-to-br from-[#2d5a7b]/50 to-[#1a3a52]/50 backdrop-blur-xs rounded-2xl shadow-2xl p-6 border border-[#87CEEB]/30 relative z-0">
               <div className="flex items-center justify-center py-4">
                 <Loader className="w-6 h-6 text-[#98D8C8] animate-spin" />
-                <span className="ml-3 text-white font-medium">Consultando datos TEMPO...</span>
+                <span className="ml-3 text-white font-medium">{t('common.loading')}</span>
               </div>
             </div>
           )}
@@ -563,7 +565,7 @@ const TempoMapInline: React.FC<TempoMapInlineProps> = ({ onLocationChange }) => 
             />
             {clickModeActive && (
               <div className="absolute top-8 left-8 right-8 bg-gradient-to-r from-[#FF9800]/95 to-[#E67E22]/95 backdrop-blur text-white px-6 py-4 rounded-xl text-center font-semibold shadow-2xl border border-[#FF9800]/30 animate-pulse">
-                🗺️ Haz clic en el mapa para seleccionar ubicación...
+                🗺️ {t('location.clickOnMapToSelect')}
               </div>
             )}
           </div>

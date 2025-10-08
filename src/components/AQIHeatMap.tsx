@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, MapPin, Satellite, Activity, Wind, Info, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // Tipos para los datos TEMPO
 interface ContaminantData {
@@ -45,6 +46,7 @@ const getAQIColorWithOpacity = (aqi: number | null, opacity: number = 0.6): stri
 };
 
 const AQIHeatMap: React.FC = () => {
+  const { t } = useTranslation();
   const [tempoData, setTempoData] = useState<TempoData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,13 +91,13 @@ const AQIHeatMap: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Error consultando datos TEMPO');
+        throw new Error(t('errors.queryingTempo'));
       }
 
       const data: TempoResponse = await response.json();
       setTempoData(data.resultados);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      setError(err instanceof Error ? err.message : t('common.unknownError'));
     } finally {
       setIsLoading(false);
     }
@@ -132,8 +134,8 @@ const AQIHeatMap: React.FC = () => {
         <div className="flex items-center gap-3">
           <Satellite className="w-8 h-8 text-blue-400" />
           <div>
-            <h1 className="text-2xl font-bold text-white">Mapa de Calidad del Aire TEMPO</h1>
-            <p className="text-slate-400 text-sm">Datos satelitales en tiempo real - NASA TEMPO</p>
+            <h1 className="text-2xl font-bold text-white">{t('map.heatMap')}</h1>
+            <p className="text-slate-400 text-sm">{t('map.realtimeData')}</p>
           </div>
         </div>
         
@@ -155,7 +157,7 @@ const AQIHeatMap: React.FC = () => {
           >
             <div className="flex items-center gap-3 text-white">
               <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
-              <span className="text-lg">Consultando datos satelitales TEMPO...</span>
+              <span className="text-lg">{t('common.loading')}</span>
             </div>
           </motion.div>
         )}
@@ -169,7 +171,7 @@ const AQIHeatMap: React.FC = () => {
                      rounded-xl p-4 text-white max-w-md text-center"
           >
             <AlertCircle className="w-6 h-6 mx-auto mb-2 text-red-400" />
-            <p>Error: {error}</p>
+            <p>{t('common.error')}: {error}</p>
           </motion.div>
         )}
 
@@ -233,10 +235,9 @@ const AQIHeatMap: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <p className="font-semibold mb-1">❌ Sin datos disponibles</p>
+                    <p className="font-semibold mb-1">❌ {t('results.noDataAvailable')}</p>
                     <p className="text-slate-300">
-                      Esta zona está fuera del rango de cobertura de TEMPO o no tiene datos válidos.
-                      TEMPO cubre principalmente Norteamérica (20°N-50°N).
+                      {t('results.outOfRange')}
                     </p>
                   </>
                 )}
@@ -261,7 +262,7 @@ const AQIHeatMap: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <Activity className="w-5 h-5 text-blue-400" />
-                Análisis Detallado
+                {t('aqi.detailedAnalysis')}
               </h3>
               <button
                 onClick={() => setSelectedZone(null)}
@@ -282,7 +283,7 @@ const AQIHeatMap: React.FC = () => {
                     {selectedZone.aqi_satelital}
                   </div>
                   <h4 className="text-lg font-semibold text-white">{selectedZone.categoria}</h4>
-                  <p className="text-slate-400 text-sm">Índice de Calidad del Aire Satelital</p>
+                  <p className="text-slate-400 text-sm">{t('aqi.satelliteIndex')}</p>
                 </div>
 
                 {/* Coordenadas */}
@@ -299,7 +300,7 @@ const AQIHeatMap: React.FC = () => {
                 <div className="space-y-4">
                   <h5 className="text-white font-semibold flex items-center gap-2">
                     <Wind className="w-4 h-4 text-green-400" />
-                    Contaminantes Detectados
+                    {t('pollutants.detected')}
                   </h5>
                   
                   {Object.entries(selectedZone.contaminantes).map(([contaminante, data]) => (
@@ -307,29 +308,29 @@ const AQIHeatMap: React.FC = () => {
                       <h6 className="text-blue-400 font-medium mb-3">{contaminante}</h6>
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
-                          <span className="text-slate-400">Troposfera:</span>
+                          <span className="text-slate-400">{t('pollutants.troposphere')}:</span>
                           <div className="text-white font-mono text-xs">
                             {data.troposphere.toExponential(2)} molec/cm²
                           </div>
                         </div>
                         <div>
-                          <span className="text-slate-400">Incertidumbre:</span>
+                          <span className="text-slate-400">{t('pollutants.uncertainty')}:</span>
                           <div className="text-white font-mono text-xs">
                             {data.uncertainty.toExponential(2)} molec/cm²
                           </div>
                         </div>
                         <div>
-                          <span className="text-slate-400">Estratosfera:</span>
+                          <span className="text-slate-400">{t('pollutants.stratosphere')}:</span>
                           <div className="text-white font-mono text-xs">
                             {data.stratosphere.toExponential(2)} molec/cm²
                           </div>
                         </div>
                         <div>
-                          <span className="text-slate-400">Calidad:</span>
+                          <span className="text-slate-400">{t('pollutants.quality')}:</span>
                           <div className={`text-xs font-semibold ${
                             data.quality_flag === 0 ? 'text-green-400' : 'text-red-400'
                           }`}>
-                            {data.quality_flag === 0 ? 'Buena' : 'Degradada'}
+                            {data.quality_flag === 0 ? t('pollutants.qualityGood') : t('pollutants.qualityDegraded')}
                           </div>
                         </div>
                       </div>
@@ -342,8 +343,7 @@ const AQIHeatMap: React.FC = () => {
                   <div className="flex items-start gap-2">
                     <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
                     <div className="text-xs text-slate-300">
-                      <strong className="text-blue-400">Nota:</strong> Índice experimental basado en datos satelitales TEMPO. 
-                      No sustituye mediciones oficiales terrestres. Solo para propósitos educativos/demostrativos.
+                      <strong className="text-blue-400">{t('disclaimer.note')}</strong> {t('disclaimer.text')}
                     </div>
                   </div>
                 </div>
@@ -351,25 +351,22 @@ const AQIHeatMap: React.FC = () => {
             ) : (
               <div className="text-center text-slate-400">
                 <AlertCircle className="w-16 h-16 mx-auto mb-4 text-orange-400" />
-                <h4 className="text-white font-semibold text-lg mb-3">Sin datos disponibles</h4>
+                <h4 className="text-white font-semibold text-lg mb-3">{t('results.noDataAvailable')}</h4>
                 <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4 mb-4">
                   <p className="text-sm text-slate-300 leading-relaxed">
-                    Esta zona está <span className="text-white font-semibold">fuera del rango de cobertura</span> del satélite TEMPO
-                    o no tiene mediciones válidas para el período seleccionado.
+                    {t('results.outOfRange')}
                   </p>
                 </div>
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                   <p className="text-xs text-slate-300 mb-2">
-                    <strong className="text-blue-400">Cobertura TEMPO:</strong>
+                    <strong className="text-blue-400">{t('location.coordinates')} TEMPO:</strong>
                   </p>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    El satélite TEMPO cubre principalmente <span className="text-white font-medium">América del Norte</span> entre
-                    las latitudes <span className="text-white font-medium">20°N y 50°N</span>,
-                    incluyendo la mayor parte de Estados Unidos, México y el sur de Canadá.
+                    {t('results.outOfRange')}
                   </p>
                 </div>
                 <p className="text-xs text-slate-500 mt-4">
-                  <strong>Coordenadas:</strong> {selectedZone.lat.toFixed(4)}°, {selectedZone.lon.toFixed(4)}°
+                  <strong>{t('location.coordinates')}:</strong> {selectedZone.lat.toFixed(4)}°, {selectedZone.lon.toFixed(4)}°
                 </p>
               </div>
             )}
@@ -382,21 +379,21 @@ const AQIHeatMap: React.FC = () => {
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="absolute bottom-6 left-6 bg-black/80 backdrop-blur-md border border-white/20 
+        className="absolute bottom-6 left-6 bg-black/80 backdrop-blur-md border border-white/20
                  rounded-xl p-4 z-20"
       >
-        <h4 className="text-white font-semibold mb-3 text-sm">Escala AQI Satelital</h4>
+        <h4 className="text-white font-semibold mb-3 text-sm">{t('aqi.scale')}</h4>
         <div className="space-y-2">
           {[
-            { range: '0-50', label: 'Bueno', color: getAQIColorWithOpacity(25, 1) },
-            { range: '51-100', label: 'Moderado', color: getAQIColorWithOpacity(75, 1) },
-            { range: '101-150', label: 'Poco saludable (sensibles)', color: getAQIColorWithOpacity(125, 1) },
-            { range: '151-200', label: 'Poco saludable', color: getAQIColorWithOpacity(175, 1) },
-            { range: '201-300', label: 'Muy poco saludable', color: getAQIColorWithOpacity(250, 1) },
-            { range: '301+', label: 'Peligroso', color: getAQIColorWithOpacity(400, 1) }
+            { range: t('aqi.ranges.good'), label: t('aqi.levels.good'), color: getAQIColorWithOpacity(25, 1) },
+            { range: t('aqi.ranges.moderate'), label: t('aqi.levels.moderate'), color: getAQIColorWithOpacity(75, 1) },
+            { range: t('aqi.ranges.unhealthySensitive'), label: t('aqi.levels.unhealthySensitiveShort'), color: getAQIColorWithOpacity(125, 1) },
+            { range: t('aqi.ranges.unhealthy'), label: t('aqi.levels.unhealthy'), color: getAQIColorWithOpacity(175, 1) },
+            { range: t('aqi.ranges.veryUnhealthy'), label: t('aqi.levels.veryUnhealthy'), color: getAQIColorWithOpacity(250, 1) },
+            { range: t('aqi.ranges.hazardous'), label: t('aqi.levels.hazardous'), color: getAQIColorWithOpacity(400, 1) }
           ].map(({ range, label, color }) => (
             <div key={range} className="flex items-center gap-3 text-xs">
-              <div 
+              <div
                 className="w-4 h-4 rounded"
                 style={{ backgroundColor: color }}
               />
