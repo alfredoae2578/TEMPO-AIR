@@ -262,7 +262,7 @@ def consultar_tempo_coordenada(lat, lon):
                 print(f"  [OPEN] Failed to open files")
                 continue
 
-            # Use lazy loading with chunks to avoid loading entire file into memory
+            # OPTIMIZATION: Use lazy loading with chunks to avoid loading entire file into memory
             ds_root = xr.open_dataset(files[0], engine='h5netcdf', chunks='auto')
             ds_product = xr.open_dataset(files[0], engine='h5netcdf', group='product', chunks='auto')
             
@@ -270,12 +270,27 @@ def consultar_tempo_coordenada(lat, lon):
                 print("  [DEBUG] [X] No se encontraron coordenadas 'latitude'/'longitude' en el archivo.")
                 ds_root.close(); ds_product.close(); continue
             
-            # OPTIMIZED: Use xarray's built-in selection instead of loading entire arrays
-            # This uses lazy evaluation and only loads the necessary data
-            lat_idx = ds_root['latitude'].sel(latitude=lat, method='nearest').latitude
-            lon_idx = ds_root['longitude'].sel(longitude=lon, method='nearest').longitude
+            # CRITICAL OPTIMIZATION: Pre-select a small spatial subset BEFORE computing
+            # This dramatically reduces memory usage and computation time
+            # Select a 2-degree box around the target point
+            lat_min, lat_max = lat - 1.0, lat + 1.0
+            lon_min, lon_max = lon - 1.0, lon + 1.0
             
-            # Get actual coordinate values for logging (minimal computation)
+            # Subset the datasets to only the region of interest
+            ds_root_subset = ds_root.sel(
+                latitude=slice(lat_min, lat_max),
+                longitude=slice(lon_min, lon_max)
+            )
+            ds_product_subset = ds_product.sel(
+                latitude=slice(lat_min, lat_max),
+                longitude=slice(lon_min, lon_max)
+            )
+            
+            # Now find nearest point within this small subset (much faster!)
+            lat_idx = ds_root_subset['latitude'].sel(latitude=lat, method='nearest').latitude
+            lon_idx = ds_root_subset['longitude'].sel(longitude=lon, method='nearest').longitude
+            
+            # Get actual coordinate values for logging
             lat_actual = float(lat_idx.values)
             lon_actual = float(lon_idx.values)
             
@@ -290,8 +305,8 @@ def consultar_tempo_coordenada(lat, lon):
             }
 
             for nombre_interno, nombre_tempo in variables_a_extraer.items():
-                if nombre_tempo in ds_product.data_vars:
-                    var = ds_product[nombre_tempo]
+                if nombre_tempo in ds_product_subset.data_vars:
+                    var = ds_product_subset[nombre_tempo]
                     # Use .sel() with method='nearest' for efficient coordinate-based selection
                     selector = {'latitude': lat, 'longitude': lon}
                     if 'time' in var.dims: 
