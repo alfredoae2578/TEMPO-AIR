@@ -222,14 +222,23 @@ const AQIHeatMap: React.FC = () => {
               </div>
 
               {/* Tooltip hover */}
-              <div className="absolute -top-16 left-1/2 transform -translate-x-1/2
+              <div className="absolute -top-20 left-1/2 transform -translate-x-1/2
                             opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                            bg-black/80 backdrop-blur-md rounded-lg px-3 py-2 text-white text-sm
-                            border border-white/20 pointer-events-none whitespace-nowrap z-10">
+                            bg-black/90 backdrop-blur-md rounded-lg px-4 py-3 text-white text-xs
+                            border border-white/20 pointer-events-none z-10 max-w-xs text-center">
                 {zone.tiene_datos ? (
-                  <>AQI: {zone.aqi_satelital} ({zone.categoria})</>
+                  <>
+                    <p className="font-bold text-sm mb-1">AQI: {zone.aqi_satelital}</p>
+                    <p className="text-slate-300">{zone.categoria}</p>
+                  </>
                 ) : (
-                  'Sin datos disponibles'
+                  <>
+                    <p className="font-semibold mb-1">❌ Sin datos disponibles</p>
+                    <p className="text-slate-300">
+                      Esta zona está fuera del rango de cobertura de TEMPO o no tiene datos válidos.
+                      TEMPO cubre principalmente Norteamérica (20°N-50°N).
+                    </p>
+                  </>
                 )}
               </div>
             </motion.div>
@@ -341,10 +350,26 @@ const AQIHeatMap: React.FC = () => {
               </>
             ) : (
               <div className="text-center text-slate-400">
-                <AlertCircle className="w-12 h-12 mx-auto mb-3 text-slate-500" />
-                <p>No hay datos TEMPO disponibles para esta zona.</p>
-                <p className="text-sm mt-2">
-                  Coordenadas: {selectedZone.lat.toFixed(4)}, {selectedZone.lon.toFixed(4)}
+                <AlertCircle className="w-16 h-16 mx-auto mb-4 text-orange-400" />
+                <h4 className="text-white font-semibold text-lg mb-3">Sin datos disponibles</h4>
+                <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-slate-300 leading-relaxed">
+                    Esta zona está <span className="text-white font-semibold">fuera del rango de cobertura</span> del satélite TEMPO
+                    o no tiene mediciones válidas para el período seleccionado.
+                  </p>
+                </div>
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                  <p className="text-xs text-slate-300 mb-2">
+                    <strong className="text-blue-400">Cobertura TEMPO:</strong>
+                  </p>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    El satélite TEMPO cubre principalmente <span className="text-white font-medium">América del Norte</span> entre
+                    las latitudes <span className="text-white font-medium">20°N y 50°N</span>,
+                    incluyendo la mayor parte de Estados Unidos, México y el sur de Canadá.
+                  </p>
+                </div>
+                <p className="text-xs text-slate-500 mt-4">
+                  <strong>Coordenadas:</strong> {selectedZone.lat.toFixed(4)}°, {selectedZone.lon.toFixed(4)}°
                 </p>
               </div>
             )}

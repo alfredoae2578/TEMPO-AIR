@@ -239,14 +239,14 @@ def consultar_tempo_coordenada(lat, lon):
         print(f"\n  [DEBUG] Buscando {config['short_name']}...")
         
         try:
-            print(f"  [SEARCH] Dataset: {config['short_name']}, BBox: ({lon - 0.05}, {lat - 0.05}, {lon + 0.05}, {lat + 0.05})")
+            print(f"  [SEARCH] Dataset: {config['short_name']}, BBox: ({lon - 0.15}, {lat - 0.15}, {lon + 0.15}, {lat + 0.15})")
 
-            # Very small bounding box for faster search and smaller files
+            # Expanded bounding box to cover more of USA while still being performant
             results = earthaccess.search_data(
                 short_name=config["short_name"],
                 version=config["version"],
                 temporal=temporal,
-                bounding_box=(lon - 0.05, lat - 0.05, lon + 0.05, lat + 0.05),
+                bounding_box=(lon - 0.15, lat - 0.15, lon + 0.15, lat + 0.15),
                 count=1
             )
 
