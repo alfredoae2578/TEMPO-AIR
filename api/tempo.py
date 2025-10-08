@@ -295,12 +295,14 @@ def consultar_tempo_coordenada(lat, lon):
                     vars_dict[nombre_interno] = float(valor)
                     print(f"    - {nombre_interno}: {float(valor):.2e}")
 
-            if vars_dict and not np.isnan(vars_dict.get('troposphere', np.nan)):
+            # Validar que el valor sea positivo y no NaN (valores negativos son fill values inválidos)
+            troposphere_val = vars_dict.get('troposphere', np.nan)
+            if vars_dict and not np.isnan(troposphere_val) and troposphere_val > 0:
                 resultados['contaminantes'][config["contaminante"]] = vars_dict
                 resultados['tiene_datos'] = True
                 print("  [DEBUG] [OK] Datos validos guardados.")
             else:
-                print("  [DEBUG] [X] El valor principal es NaN o no hay datos.")
+                print(f"  [DEBUG] [X] Datos invalidos (valor troposfera: {troposphere_val:.2e})")
 
             
             ds_root.close()
